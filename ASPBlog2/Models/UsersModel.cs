@@ -30,18 +30,18 @@ namespace ASPBlog2.Models
         [Display(Name = "Confirm Email")]
         [StringLength(50, MinimumLength = 4, ErrorMessage = "The Email must be from 4 to 50 symbols.")]
         [Required(ErrorMessage = "Please fill in the field Confirm Email.")]
-        [Compare("Email", ErrorMessage ="Email confirm is wrong!")]
+        [Compare("email", ErrorMessage ="Email confirm is wrong!")]
         public string confirmEmail { get; set; }
 
         [Display(Name = "Password")]
         [DataType(DataType.Password)]
         [Required(ErrorMessage = "Please fill in the field Password.")]
         [StringLength(50, MinimumLength =4, ErrorMessage ="The password must be from 4 to 50 symbols.")]
-        public string passport { get; set; }
+        public string password { get; set; }
 
         [Display(Name = "Confirm Password")]
         [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "Password confirm is wrong!")]
-        public string confirmPassport { get; set; }
+        [Compare("password", ErrorMessage = "Password confirm is wrong!")]
+        public string confirmPassword { get; set; }
     }
 }

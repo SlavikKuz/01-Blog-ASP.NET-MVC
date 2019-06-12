@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ASPBlog2.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -30,6 +31,16 @@ namespace ASPBlog2.Controllers
         public ActionResult Create()
         {
 
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Create(UsersModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction("Index");
+            }
             return View();
         }
     }
