@@ -1,0 +1,13 @@
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\bin\Debug\DataLibrary.dll
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\bin\Debug\DataLibrary.pdb
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\bin\Debug\Dapper.dll
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\bin\Debug\Drapper.dll
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\bin\Debug\Drapper.Validation.dll
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\bin\Debug\Newtonsoft.Json.dll
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\bin\Debug\Dapper.xml
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\bin\Debug\Newtonsoft.Json.xml
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\obj\Debug\DataLibrary.csprojAssemblyReference.cache
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\obj\Debug\DataLibrary.csproj.CoreCompileInputs.cache
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\obj\Debug\DataLibrary.csproj.CopyComplete
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\obj\Debug\DataLibrary.dll
+C:\Users\slavi\source\repos\ASPBlog2\DataLibrary\obj\Debug\DataLibrary.pdb
