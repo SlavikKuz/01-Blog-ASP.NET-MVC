@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using static DataLibrary.Logik.UsersDB;
 
 namespace ASPBlog2.Controllers
 {
@@ -39,9 +40,30 @@ namespace ASPBlog2.Controllers
         {
             if (ModelState.IsValid)
             {
+                createUser(model.age, model.name, model.lastname, model.email, model.password);
                 return RedirectToAction("Index");
             }
             return View();
+        }
+
+        public ActionResult viewUsers()
+        {
+            var data = loadUsers();
+            List<UsersModel> user = new List<UsersModel>();
+
+            foreach(var i in data)
+            {
+                user.Add(new UsersModel
+                {
+                    age = i.age,
+                    name = i.name,
+                    lastname = i.lastname,
+                    email = i.email,
+                    password = i.password
+                });
+            }
+
+            return View(user);
         }
     }
 }
