@@ -6,7 +6,7 @@ Task: create a project, user class, models, controllers, views, connect sql data
 Website has a page for adding a new user (name, age, email, etc). 
 Fields are protected. 
 
-<img src="Screenshots/Skjermbilde.png?raw=true" width="320"/>
+<img src="Screenshots/Skjermbilde.PNG?raw=true" width="320"/>
 
 Data is recorded to the SQL database. 
 List of users is shown on the User List page.
