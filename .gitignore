@@ -1,3 +1,5 @@
 /.vs
 /packages
-
+/TeleDronBot/.vs
+/TeleDronBot/TeleDronBot/bin
+/TeleDronBot/TeleDronBot/obj
