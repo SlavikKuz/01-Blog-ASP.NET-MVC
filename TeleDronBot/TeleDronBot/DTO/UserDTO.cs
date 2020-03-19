@@ -8,7 +8,7 @@ using TeleDronBot.Repository;
 
 namespace TeleDronBot.DTO
 {
-    class UserDTO : BaseRepository, IBaseEntity
+    class UserDTO
     {
         private bool disposed = false;
 

@@ -4,39 +4,41 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TeleDronBot.Base.BaseClass;
 using TeleDronBot.DTO;
 
 namespace TeleDronBot.Repository
 {
-    class ProposalRepository : BaseRepository
+    class ProposalRepository : BaseProviderImpementation<ProposalDTO>
     {
         public async ValueTask<int> GetCurrentNumberProposalAsync(long chatid)
         {
             UserDTO user = await db.Users.FirstOrDefaultAsync(i => i.ChatId == chatid);
             return user.proposals.Count;
         }
-        public async Task CreateProposal(long chatid)
-        {
-            UserDTO user = await db.Users.FirstOrDefaultAsync(i => i.ChatId == chatid);
 
-            ProposalDTO porposal = new ProposalDTO()
+        public async Task Create(UserDTO user)
+        {            
+            if (user == null)
+                throw new NullReferenceException("User cannot be null");
+            
+            ProposalDTO proposal = await db.proposalsDTO.AsNoTracking().FirstOrDefaultAsync(i => i.ChatId == user.ChatId);
+            
+            if (proposal != null)
+                return;
+
+            proposal = new ProposalDTO()
             {
-                ChatId = chatid
+                ChatId = user.ChatId
             };
-            user.proposals.Add(porposal);
 
-            await db.SaveChangesAsync();
+            await base.Create(proposal);
         }
 
-        public async ValueTask<ProposalDTO> GetCurrentProposal(long chatid)
+        public async override ValueTask<ProposalDTO> FindById(long id)
         {
-            return await db.proposalsDTO.LastOrDefaultAsync(i => i.ChatId == chatid);
-        }
-
-        public async Task UpdateProposal(ProposalDTO item)
-        {
-            db.Entry(item).State = EntityState.Modified;
-            await db.SaveChangesAsync();
+            return await db.proposalsDTO
+                .FirstOrDefaultAsync(i => i.ChatId == id);
         }
 
         public async Task DeleteNotFillProposalAsync(long chatid)
@@ -45,10 +47,10 @@ namespace TeleDronBot.Repository
                 .CountAsync();
             if (count == 0)
                 return;
-            count = await db.proposalsDTO.Where(i => i.BortNumber == null).CountAsync();
+            count = await db.proposalsDTO.Where(i => i.longtitude == null).CountAsync();
             if (count == 0)
                 return;
-            IEnumerable<ProposalDTO> Ids = db.proposalsDTO.Where(i => i.BortNumber == null);
+            IEnumerable<ProposalDTO> Ids = db.proposalsDTO.Where(i => i.longtitude == null);
             db.proposalsDTO.RemoveRange(Ids);
             await db.SaveChangesAsync();
         }

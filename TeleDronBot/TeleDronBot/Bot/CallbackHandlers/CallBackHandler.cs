@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TeleDronBot.Base.BaseClass;
 using TeleDronBot.DTO;
 using TeleDronBot.Interfaces;
 using TeleDronBot.Repository;
@@ -12,18 +13,18 @@ using Telegram.Bot.Args;
 
 namespace TeleDronBot.Bot
 {
-    class CallBackHandler : BaseHandler, ICallbackHandler
+    class CallBackHandler : RepositoryProvider, ICallbackHandler
     {
-        HubRepository hubRepository;
-        public CallBackHandler(TelegramBotClient client, ApplicationContext context) : base(client, context)
+        TelegramBotClient client;
+        public CallBackHandler(TelegramBotClient client)
         {
-            hubRepository = new HubRepository();
+            this.client = client;
         }
 
         #region PrivateHandlers
         private async Task CallBackHandler_Confirm(long chatid)
         {
-            HubDTO hub = await db.Hubs.Where(i => i.ChatIdReceiver == chatid).FirstOrDefaultAsync();
+            HubDTO hub = await hubRepository.FirstElement(i => i.ChatIdReceiver == chatid);
             await hubRepository.ConfirmDialog("Start", hub.ChatIdCreater, chatid);
         }
         #endregion
@@ -34,8 +35,10 @@ namespace TeleDronBot.Bot
             if (callback.CallbackQuery.Data == "confirm")
             {
                 await CallBackHandler_Confirm(chatid);
-                HubDTO hub = await db.Hubs.Where(i => i.ChatIdReceiver == chatid).FirstOrDefaultAsync();
+                HubDTO hub = await hubRepository.FirstElement(i => i.ChatIdReceiver == chatid);
+                
                 long chatIdCreater = hub.ChatIdCreater;
+                
                 await client.SendTextMessageAsync(chatIdCreater, "Connected");
                 await client.SendTextMessageAsync(chatid, "Connected");
                 return;

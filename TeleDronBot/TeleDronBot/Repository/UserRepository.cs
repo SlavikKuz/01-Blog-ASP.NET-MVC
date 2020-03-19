@@ -4,91 +4,85 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TeleDronBot.Base.BaseClass;
 using TeleDronBot.DTO;
+using TeleDronBot.Interfaces;
 
 namespace TeleDronBot.Repository
 {
-    class UserRepository : UserDTO
+    class UserRepository : BaseProviderImpementation<UserDTO>
     {
-        private GenericRepository<UserDTO> repository;
-        
-        public UserRepository()
+        #region repository_methods
+
+        public override async Task Create(UserDTO user)
         {
-            repository = new GenericRepository<UserDTO>(db);
+            if (user.ChatId == 0)
+                throw new Exception("chat id cant be null");
+            user.step = new StepDTO();
+            //user.step.ChatId = user.ChatId;
+            user.proposals = new List<ProposalDTO>();
+            await base.Create(user);
         }
+
+        #endregion
+        
         public async Task AuthenticateUser(long chatid)
         {
-            UserDTO user = await db.Users.FirstOrDefaultAsync(i => i.ChatId == chatid);
+            UserDTO user = await FindById(chatid);
             if (user == null)
             {
                 user = new UserDTO();
                 user.ChatId = chatid;
-                user.step = new StepDTO();
-                user.proposals = new List<ProposalDTO>();
-                await repository.Create(user);
+                await Create(user);
             }
             return;
         }
-        public string GetCurrentActionName(long chatid)
+
+        public async ValueTask<string> GetCurrentActionName(long chatid)
         {
-            var lst = db.Users.Join(db.Steps,
-                 i => i.ChatId,
-                 s => s.ChatId,
-                 (i, s) => new UserDTO
-                 {
-                     step = i.step
-                 }).ToList();
-            return lst.Count() == 0 ? "null" : lst[0].step.NameOfStep;
+            UserDTO user = await db.Users.AsNoTracking().Include(i => i.step)
+                .FirstOrDefaultAsync(c => c.ChatId == chatid);
+            return user != null ? user.step.NameOfStep : "null";
         }
-        public int GetCurrentActionStep(long chatid) =>
-            db.Users.Join(db.Steps,
-                i => i.ChatId,
-                s => s.ChatId,
-                (i, s) => new UserDTO
-                {
-                    step = i.step
-                }).ToList()[0].step.CurrentStep;
+
+        public async ValueTask<int> GetCurrentActionStep(long chatid)
+        {
+            UserDTO user = await db.Users.Include(i => i.step)
+                .FirstOrDefaultAsync(c => c.ChatId == chatid);
+            return user.step.CurrentStep;
+
+        }
+
         public async Task RecoveryUser(long chatid)
         {
-            UserDTO user = await db.Users.FirstOrDefaultAsync(i => i.ChatId == chatid);
+            UserDTO user = await FindById(chatid);
             if (user == null)
                 await AuthenticateUser(chatid);
             else
             {
                 user = new UserDTO() { ChatId = chatid };
-                await repository.Update(user);
+                await Update(user);
             }
         }
+        
         public async Task ChangeAction(long chatid, string nameAction, int step)
         {
-            UserDTO user = await db.Users.FirstOrDefaultAsync(i => i.ChatId == chatid);
+            UserDTO user = await db.Users.Include(i => i.step)
+                .FirstOrDefaultAsync(j => j.ChatId == chatid);
             if (user == null)
             {
                 await AuthenticateUser(chatid);
                 return;
             }
-            UserDTO _user = db.Users.Join(db.Steps,
-                i => i.ChatId,
-                s => s.ChatId,
-                (i, s) => new UserDTO
-                {
-                    step = i.step
-                }).ToList()[0];
-            user.step = _user.step;
+            
             user.step.NameOfStep = nameAction;
             user.step.CurrentStep = step;
-            await repository.Update(user);
+            await Update(user);
         }
 
-        public bool IsUserInAction(long chatid)
-        {
-            string name = GetCurrentActionName(chatid);
-            return name == "null" || name == "NULL" ? false : true;
-        }
         public async ValueTask<bool> IsAuthenticate(long chatid)
         {
-            return await repository
-                .FindById(chatid) != null ? true : false;
+            return await FindById(chatid) != null ? true : false;
         }
     }
 }

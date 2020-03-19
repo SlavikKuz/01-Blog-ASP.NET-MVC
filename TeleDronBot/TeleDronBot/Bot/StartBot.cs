@@ -21,9 +21,9 @@ namespace TeleDronBot.Bot
             client = new TelegramBotClient(Constant.Token);
             client.StartReceiving();
 
-            var scope = new ServiceCollection().AddScoped<IMessageHandler, MessageHandler>(x => new MessageHandler(client, context))
-                .AddScoped<ICallbackHandler, CallBackHandler>(i => new CallBackHandler(client, context)).BuildServiceProvider();
-
+            var scope = new ServiceCollection().AddScoped<IMessageHandler, MessageHandler>(x => new MessageHandler(client))
+                .AddScoped<ICallbackHandler, CallBackHandler>(i => new CallBackHandler(client)).BuildServiceProvider();
+            
             client.OnCallbackQuery += async (object sender, CallbackQueryEventArgs args) =>
             {
                 var callbackHandler = scope.GetService<ICallbackHandler>();

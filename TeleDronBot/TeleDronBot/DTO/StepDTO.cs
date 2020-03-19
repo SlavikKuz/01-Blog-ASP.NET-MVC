@@ -10,8 +10,11 @@ namespace TeleDronBot.DTO
     {
         [Key]
         public int Id { get; set; }
+        
         [ForeignKey("UserDTO")]
         public long ChatId { get; set; }
+
+        public UserDTO user { get; set; }
         public string NameOfStep { get; set; }
         public int CurrentStep { get; set; }
     }

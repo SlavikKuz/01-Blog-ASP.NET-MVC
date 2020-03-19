@@ -1,43 +1,45 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TeleDronBot.Base.BaseClass;
 
 namespace TeleDronBot.DTO
 {
     class CountPropose
     {
+        [Key]
+        public int Id { get; set; }
+
         public int Count { get; set; }
     }
-    class CountProposeHandler
-    {
-        private static ApplicationContext db;
-        static CountProposeHandler()
-        {
-            db = new ApplicationContext();
-        }
 
+    class CountProposeHandler : RepositoryProvider
+    {
         public async static ValueTask<int> GetCount()
         {
-            CountPropose c = await db.CountPurpose.FirstOrDefaultAsync();
-            return c.Count;
+            IEnumerable<CountPropose> c = await countProposeRepository.Get();
+            return c.ToList()[0].Count;
         }
 
-        public async static Task ChangeProposeCount()
+        public async Task ChangeProposeCount()
         {
-            int countFields = await db.CountPurpose.CountAsync();
+            int countFields = await countProposeRepository.CountAsync();
+
             if (countFields == 0)
             {
                 CountPropose c = new CountPropose();
                 c.Count = 1;
-                db.CountPurpose.Add(c);
-                await db.SaveChangesAsync();
+                await countProposeRepository.Create(c);
             }
-            CountPropose countPropose = await db.CountPurpose.FirstOrDefaultAsync();
+
+            IEnumerable<CountPropose> entity = await countProposeRepository.Get();
+            CountPropose countPropose = entity.ToList()[0];
             countPropose.Count = countPropose.Count + 1;
-            db.Entry(countPropose).State = EntityState.Modified;
-            await db.SaveChangesAsync();
+            await countProposeRepository.Update(countPropose);
         }
     }
 }
