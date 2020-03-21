@@ -44,34 +44,15 @@ namespace TeleDronBot.Base.BaseClass
             db.Entry(item).State = EntityState.Modified;
             await db.SaveChangesAsync();
         }
-        
-        public async override ValueTask<IEnumerable<T>> Get()
+
+        public override IQueryable<T> Get()
         {
-            return await dbSet.ToListAsync();
+            return dbSet;
         }
         
         public async override ValueTask<IEnumerable<T>> Get(Func<T, bool> predicate)
         {
             return await Task.Run(() => dbSet.AsNoTracking().Where(predicate).ToList());
-        }
-
-        public async override ValueTask<T> FirstElement(Func<T, bool> predicate)
-        {
-            IEnumerable<T> enumarable = await Get(predicate);
-            if (enumarable != null)
-            {
-                return enumarable.ToList()[0];
-            }
-            return null;
-        }
-        public async override ValueTask<T> LastElement(Func<T, bool> predicate)
-        {
-            IEnumerable<T> enumarable = await Get(predicate);
-            if (enumarable != null)
-            {
-                return enumarable.ToList()[enumarable.Count() - 1];
-            }
-            return null;
         }
     }
 }

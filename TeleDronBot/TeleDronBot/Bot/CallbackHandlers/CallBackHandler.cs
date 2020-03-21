@@ -24,7 +24,7 @@ namespace TeleDronBot.Bot
         #region PrivateHandlers
         private async Task CallBackHandler_Confirm(long chatid)
         {
-            HubDTO hub = await hubRepository.FirstElement(i => i.ChatIdReceiver == chatid);
+            HubDTO hub = await hubRepository.Get().FirstOrDefaultAsync(i => i.ChatIdReceiver == chatid);
             await hubRepository.ConfirmDialog("Start", hub.ChatIdCreater, chatid);
         }
         #endregion
@@ -35,8 +35,8 @@ namespace TeleDronBot.Bot
             if (callback.CallbackQuery.Data == "confirm")
             {
                 await CallBackHandler_Confirm(chatid);
-                HubDTO hub = await hubRepository.FirstElement(i => i.ChatIdReceiver == chatid);
-                
+                HubDTO hub = await hubRepository.Get().FirstOrDefaultAsync(i => i.ChatIdReceiver == chatid);
+
                 long chatIdCreater = hub.ChatIdCreater;
                 
                 await client.SendTextMessageAsync(chatIdCreater, "Connected");

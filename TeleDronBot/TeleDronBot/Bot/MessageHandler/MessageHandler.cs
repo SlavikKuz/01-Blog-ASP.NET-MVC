@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TeleDronBot.Base.BaseClass;
 using TeleDronBot.Bot.CommonHandler;
+using TeleDronBot.Commons;
 using TeleDronBot.DTO;
 using TeleDronBot.Geolocation;
 using TeleDronBot.Interfaces.Bot;
@@ -16,30 +17,33 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TeleDronBot.Bot
 {
-    class MessageHandler : MainProvider, IMessageHandler
+    class MessageHandler : IMessageHandler
     {
         long chatid;
         TelegramBotClient client;
+        MainProvider provider;
 
-        public MessageHandler(TelegramBotClient client)
+        public MessageHandler(TelegramBotClient client, MainProvider provider)
         {
             this.client = client;
+            this.provider = provider;
         }
 
         #region PrivateHandlers
 
-        #region BuisnessRegistration
+        #region BusinessRegistration
+        
         private async Task CommandHandler_BuisnessRegistrationKorporativ(long chatid, string message, MessageEventArgs messageObject)
         {
-            int currentStep = await userRepository.GetCurrentActionStep(chatid);
-            UserDTO user = await userRepository.FindById(chatid);
+            int currentStep = await provider.userService.GetCurrentActionStep(chatid);
+            UserDTO user = await provider.userService.FindById(chatid);
             DronDTO dron = new DronDTO();
 
             if (currentStep == 1)
             {
                 user.FIO = message;
-                await userRepository.Update(user);
-                await userRepository.ChangeAction(chatid, "Corporate client registration", 2);
+                await provider.userService.Update(user);
+                await provider.userService.ChangeAction(chatid, "Corporate client registration", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Enter your telephone number");
                 return;
             }
@@ -47,9 +51,10 @@ namespace TeleDronBot.Bot
             if (currentStep == 2)
             {
                 user.Phone = message;
-                await userRepository.Update(user);
+                user.BusinessPrivilage = 1;
+                await provider.userService.Update(user);
                 await client.SendTextMessageAsync(chatid, "Registation succeeded");
-                await managerPush.SendMessage(client, chatid);
+                await provider.managerPush.SendMessage(client, chatid);
                 return;
             }
         }
@@ -57,32 +62,32 @@ namespace TeleDronBot.Bot
 
         private async Task CommandHandler_Start(long chatid)
         {
-            await client.SendTextMessageAsync(chatid, "Sample text", 0, false, false, 0, KeyboardHandler.Markup_Start());
+            await client.SendTextMessageAsync(chatid, "Sample text", 0, false, false, 0, KeyboardHandler.Markup_Start_AfterChange());
         }
 
-        #region PaymantRegistration
+        #region PaymentRegistration
 
-        private async Task CommandHandler_PaidRegistrationWithoutInsurance(long chatid, string message, MessageEventArgs messageObject)
+        private async Task CommandHandler_PaidRegistrationWithoutInsurance(UserDTO user, string message, MessageEventArgs messageObject)
         {
-            int currentStep = await userRepository.GetCurrentActionStep(chatid);
+            long chatid = user.ChatId;
+            int currentStep = await provider.userService.GetCurrentActionStep(chatid);
 
-            UserDTO user = await userRepository.FindById(chatid);
             DronDTO dron = new DronDTO();
-            ProposalDTO proposal = await proposalRepository.FindById(chatid);
+            ProposalDTO proposal = await provider.proposalService.FindById(chatid);
 
             if (currentStep == 1)
             {
                 user.FIO = message;
-                await userRepository.Update(user);
-                await userRepository.ChangeAction(chatid, "Paid registarion w/o insurance", 2);
+                await provider.userService.Update(user);
+                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Enter mobile phone number");
                 return;
             }
             if (currentStep == 2)
             {
                 user.Phone = message;
-                await userRepository.Update(user);
-                await userRepository.ChangeAction(chatid, "Paid registarion w/o insurance", 3);
+                await provider.userService.Update(user);
+                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Enter drone type");
                 return;
             }
@@ -90,16 +95,18 @@ namespace TeleDronBot.Bot
             {
                 dron.Mark = message;
                 await dronRepository.Create(dron);
-                await userRepository.ChangeAction(chatid, "Paid registarion w/o insurance", 4);
+                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Enter your address");
+                return;
             }
             if (currentStep == 4)
             {
                 await proposalRepository.Create(user);
                 proposal.Address = message;
-                await proposalRepository.Update(proposal);
-                await userRepository.ChangeAction(chatid, "Paid registarion w/o insurance", 5);
+                await provider.userService.Update(proposal);
+                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Your geolocation");
+                return;
             }
             if (currentStep == 5)
             {
@@ -115,24 +122,28 @@ namespace TeleDronBot.Bot
                     await proposalRepository.Update(proposal);
                     await proposeHandler.ChangeProposeCount();
 
+                    user.PilotPrivilage = 1;
+                    await userRepository.Update(user);
+
                     await adminPush.MessageRequisitionAsync(client, chatid);
                 }
             }
         }
 
-        private async Task CommandHandler_PaidRegistrationWithInsurance(long chatid, string message, MessageEventArgs messageObject = null)
+        private async Task CommandHandler_PaidRegistrationWithInsurance(UserDTO user, string message, MessageEventArgs messageObject = null)
         {
-            int currentStep = await userRepository.GetCurrentActionStep(chatid);
-            UserDTO user = await userRepository.FindById(chatid);
+            long chatid = user.ChatId;
+            int currentStep = await provider.userService.GetCurrentActionStep(chatid);
+
             DronDTO dron = new DronDTO();
-            ProposalDTO proposal = await proposalRepository.FindById(chatid);
+            ProposalDTO proposal = await provider.proposalService.FindById(chatid);
 
             if (currentStep == 1)
             {
                 user.FIO = message;
-                await userRepository.Update(user);
+                await provider.userService.Update(user);
 
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", 2);
+                await provider.userService.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
 
                 await client.SendTextMessageAsync(chatid, "Enter your tel.");
                 return;
@@ -144,7 +155,7 @@ namespace TeleDronBot.Bot
                 user.Phone = message;
                 await userRepository.Update(user);
 
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", 3);
+                await userRepository.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Enter your drone type");
                 return;
             }
@@ -153,7 +164,7 @@ namespace TeleDronBot.Bot
                 dron.Mark = message;
                 await dronRepository.Create(dron);
 
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", 4);
+                await userRepository.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Enter insurance type");
                 return;
             }
@@ -162,15 +173,17 @@ namespace TeleDronBot.Bot
                 proposal.TypeOfInsurance = message;
 
                 await proposalRepository.Update(proposal);
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", 5);
+                await userRepository.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Enter your address");
+                return;
             }
             if (currentStep == 5)
             {
                 proposal.Address = message;
                 await proposalRepository.Update(proposal);
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", 6);
+                await userRepository.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
                 await client.SendTextMessageAsync(chatid, "Send your geolocation");
+                return;
             }
 
             if (currentStep == 6)
@@ -186,9 +199,12 @@ namespace TeleDronBot.Bot
                     await proposalRepository.Update(proposal);
 
                     await client.SendTextMessageAsync(chatid, "Waiting for payment"
-                        , 0, false, false, 0, KeyboardHandler.Markup_After_Registration());
+                        , 0, false, false, 0, KeyboardHandler.PilotWithSubscribe_Markup());
 
                     await proposeHandler.ChangeProposeCount();
+
+                    user.PilotPrivilage = 2;
+                    await userRepository.Update(user);
 
                     await adminPush.MessageRequisitionAsync(client, chatid);
                     await client.SendTextMessageAsync(chatid, "Registration succeeded.");
@@ -203,92 +219,110 @@ namespace TeleDronBot.Bot
             Console.WriteLine($"Sent : {chatid}\nText:{message.Message.Text}\n");
             chatid = message.Message.Chat.Id;
             string messageText = message.Message.Text;
-            string action = await userRepository.GetCurrentActionName(chatid);
+            string action = await provider.userService.GetCurrentActionName(chatid);
+            UserDTO user = await provider.userService.FindById(chatid);
 
-            await userRepository.AuthenticateUser(chatid);
-
-            /*    if(await HubsHandler.IsChatActive(chatid))
-            {
-                long[] arrChatid = await HubsHandler.GetChatId(chatid);
-                long chatIdRecive = arrChatid[0] == chatid ? arrChatid[1] : arrChatid[0];
-                await client.SendTextMessageAsync(chatIdRecive, messageText);
-                return;
-            }*/
+            await provider.userService.AuthenticateUser(chatid);
 
             await UserLogs.WriteLog(chatid, messageText);
+
+            bool isRegistration = await provider.userService.IsUserRegistration(chatid);
+            
+            if (messageText == "Back")
+            {
+                await provider.userService.ChangeAction(chatid, "NULL", 0);
+                await CommandHandler_Start(chatid);
+                return;
+            }
 
             if (messageText == "/start")
             {
                 await CommandHandler_Start(chatid);
-            }
-
-            if (messageText == "/chat")
-            {
-                await hubRepository.CreateDialog(chatid, 111111111);
-
-                var keyboard = new InlineKeyboardMarkup(new InlineKeyboardButton[][]
-                {
-                    new[] {
-                        new InlineKeyboardButton(){Text="Confirm", CallbackData="confirm"}
-                    },
-                    new[] {
-                        new InlineKeyboardButton(){Text="Cancel", CallbackData="cancel"}
-                    }
-                });
-
-                await client.SendTextMessageAsync(111111111, $"{message.Message.Chat.Username} wants to contact you", 0, false, false, 0, keyboard);
-            }
-
-            if (messageText == "/op")
-            {
-
-            }
-
-            if (messageText == "Back")
-            {
-                await userRepository.ChangeAction(chatid, "NULL", 0);
-                await CommandHandler_Start(chatid);
-
                 return;
+            }
+
+            if (CommandList.RegistrationPilotCommandList().Contains(messageText) && user.PilotPrivilage != 0)
+            {
+                await client.SendTextMessageAsync(chatid, "You are already registered", 0, false, false, 0, KeyboardHandler.ChangeKeyBoardPilot(user.PilotPrivilage));
+                return;
+            }
+
+            if (CommandList.RegistrationBuisnessCommandList().Contains(messageText) && user.BusinessPrivilage != 0)
+            {
+                await client.SendTextMessageAsync(chatid, "You are already registered", 0, false, false, 0, KeyboardHandler.Markup_BuisnessmanMenu());
+                return;
+            }
+            
+            if (messageText == "Pilot")
+            {
+                if (user.PilotPrivilage == 0)
+                {
+                    await client.SendTextMessageAsync(chatid, "You logged in as a pilot"
+                        , 0, false, false, 0, KeyboardHandler.Markup_Start_Pilot_Mode());
+                    return;
+                }
+                else
+                {
+                    await client.SendTextMessageAsync(chatid, "You logged in as a pilot",
+                        0, false, false, 0, KeyboardHandler.ChangeKeyBoardPilot(user.PilotPrivilage));
+                }
+            }
+
+            if (messageText == "Full access paid")
+            {
+                await client.SendTextMessageAsync(chatid, "There are several options for registration", 
+                    0, false, false, 0, KeyboardHandler.Markup_Start_Pilot_Payment_Mode());
+            }
+
+            if (messageText == "Limited access free")
+            {
+                await client.SendTextMessageAsync(chatid, "There are several options for registration",
+                    0, false, false, 0, KeyboardHandler.Markup_Start_Pilot_UnBuyer_Mode());
             }
 
             #region Paid registration for pilots
 
-            if (messageText == "Paid registration with insurance")
-            {
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", 1);
-                await client.SendTextMessageAsync(chatid, "Enter your name:", 0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
-                return;
-            }
-
-            if (messageText == "Paid registration w/o insurance")
-            {
-                await userRepository.ChangeAction(chatid, "Paid registration w/o insurance", 1);
-                await client.SendTextMessageAsync(chatid, "Enter your name", 0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
-                return;
-            }
-            #endregion
-
-            #region Free registration for pilots
-
             if (messageText == "With insurance")
             {
-                await userRepository.ChangeAction(chatid, "With insurance", 1);
-                await client.SendTextMessageAsync(chatid, "Enter your name", 0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
+                await provider.userService.ChangeAction(chatid, "With insurance", 1);
+                await client.SendTextMessageAsync(chatid, "Enter your name:", 
+                    0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
                 return;
             }
+
             if (messageText == "W/o insurance")
             {
-                await userRepository.ChangeAction(chatid, "W/o insurance", 1);
-                await client.SendTextMessageAsync(chatid, "Enter your name", 0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
+                await provider.userService.ChangeAction(chatid, "W/o insurance", 1);
+                await client.SendTextMessageAsync(chatid, "Enter your name", 
+                    0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
             }
+
+            if (messageText == "Paid registration with insurance")
+            {
+                await provider.userService.ChangeAction(chatid, "Paid registration with insurance", 1);
+                await client.SendTextMessageAsync(chatid, "Enter your name", 
+                    0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
+                return;
+            }
+            
+            if (messageText == "Paid registration w/o insurance")
+            {
+                await provider.userService.ChangeAction(chatid, "Paid registration w/o insurance", 1);
+                await client.SendTextMessageAsync(chatid, "Enter your name", 
+                    0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
+                return;
+            }
+
+            #endregion
+            #region Free registration for pilots
+
             #endregion
 
             #region Corporate registration
 
             if (messageText == "Corporate")
             {
-                await userRepository.ChangeAction(chatid, "Corporate registration", 1);
+                await provider.userService.ChangeAction(chatid, "Corporate registration", 1);
                 await client.SendTextMessageAsync(chatid, "Enter your name", 0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
 
                 return;
@@ -301,41 +335,39 @@ namespace TeleDronBot.Bot
 
             if (messageText == "Client")
             {
-                await client.SendTextMessageAsync(chatid, "There are several options for registration",
-                    0, false, false, 0, KeyboardHandler.Markup_Start_Buisness_Mode());
-            }
-
-            if (messageText == "Full service (Payment)")
-            {
-                await client.SendTextMessageAsync(chatid, "There are several options with registration", 0, false, false, 0, KeyboardHandler.Markup_Start_Pilot_Payment_Mode());
-            }
-
-            if (messageText == "Pilot")
-            {
-                await client.SendTextMessageAsync(chatid, "You logged in as a pilot"
-                    , 0, false, false, 0, KeyboardHandler.Markup_Start_Pilot_Mode());
+                if (user.BusinessPrivilage == 0)
+                {
+                    await client.SendTextMessageAsync(chatid, "There are several options for registration.",
+                        0, false, false, 0, KeyboardHandler.Markup_Start_Buisness_Mode());
+                }
+                else
+                {
+                    await client.SendTextMessageAsync(chatid, "You are already registered.",
+                        0, false, false, 0, KeyboardHandler.Markup_BuisnessmanMenu());
+                }
+                return;
             }
 
             if (action != null)
             {
                 if (action == "Paid registration with insurance")
                 {
-                    await CommandHandler_PaidRegistrationWithInsurance(chatid, messageText, message);
+                    await CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
                     return;
                 }
                 if (action == "Paid registration w/o insurance")
                 {
-                    await CommandHandler_PaidRegistrationWithoutInsurance(chatid, messageText, message);
+                    await CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message);
                     return;
                 }
                 if (action == "With insurance")
                 {
-                    await CommandHandler_PaidRegistrationWithInsurance(chatid, messageText, message);
+                    await CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
                     return;
                 }
                 if (action == "W/o insurance")
                 {
-                    await CommandHandler_PaidRegistrationWithoutInsurance(chatid, messageText, message);
+                    await CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message);
                     return;
                 }
                 if (action == "Coprorate client")
@@ -343,13 +375,6 @@ namespace TeleDronBot.Bot
                     await CommandHandler_BuisnessRegistrationKorporativ(chatid, messageText, message);
                     return;
                 }
-
-                if (messageText == "Limited service(Free)")
-                {
-                    await client.SendTextMessageAsync(chatid, "There are several options with registration",
-                        0, false, false, 0, KeyboardHandler.Markup_Start_Pilot_UnBuyer_Mode());
-                }
-
             }
         }
     }

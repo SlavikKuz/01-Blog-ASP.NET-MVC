@@ -18,10 +18,13 @@ namespace TeleDronBot.Bot
         public void BotRun()
         {
             context.Database.EnsureCreated();
+            Services.ServiceProvider provider = new Services.ServiceProvider();
             client = new TelegramBotClient(Constant.Token);
             client.StartReceiving();
 
-            var scope = new ServiceCollection().AddScoped<IMessageHandler, MessageHandler>(x => new MessageHandler(client))
+            List<string> commandList = CommandList.GetCommands();
+            var scope = new ServiceCollection()
+                .AddScoped<IMessageHandler, MessageHandler>(x => new MessageHandler(client, provider))
                 .AddScoped<ICallbackHandler, CallBackHandler>(i => new CallBackHandler(client)).BuildServiceProvider();
             
             client.OnCallbackQuery += async (object sender, CallbackQueryEventArgs args) =>

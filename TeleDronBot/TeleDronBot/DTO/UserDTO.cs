@@ -20,6 +20,10 @@ namespace TeleDronBot.DTO
         public StepDTO step { get; set; }
         public string Phone { get; set; }
 
+        public int IsRegister { get; set; }
+        public int PilotPrivilage { get; set; }
+        public int BusinessPrivilage { get; set; }
+
         public ICollection<ProposalDTO> proposals { get; set; }
         public UserDTO()
         {

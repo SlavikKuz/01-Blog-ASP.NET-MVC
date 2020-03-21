@@ -1,101 +1,91 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TeleDronBot.Base.BaseClass;
 using TeleDronBot.DTO;
-using TeleDronBot.Interfaces;
 
-namespace TeleDronBot.Repository
+namespace TeleDronBot.Services
 {
-    class UserRepository : BaseProviderImpementation<UserDTO>
+    class UserService : RepositoryProvider
     {
-        #region repository_methods
-
-        public override async Task Create(UserDTO user)
+        public async ValueTask<UserDTO> FindById(long chatid)
         {
-            if (user.ChatId == 0)
-                throw new Exception("chat id cant be null");
-            user.step = new StepDTO();
-            //user.step.ChatId = user.ChatId;
-            user.proposals = new List<ProposalDTO>();
-            await base.Create(user);
+            return await userRepository.FindById(chatid);
+        }
+        
+        public async Task Update(UserDTO user)
+        {
+            await userRepository.Update(user);
         }
 
-        #endregion
-        
         public async Task AuthenticateUser(long chatid)
         {
-            UserDTO user = await FindById(chatid);
+            UserDTO user = await userRepository.FindById(chatid);
             if (user == null)
             {
                 user = new UserDTO();
                 user.ChatId = chatid;
-                await Create(user);
+                await userRepository.Create(user);
             }
             return;
         }
-
+        
         public async ValueTask<string> GetCurrentActionName(long chatid)
         {
-            UserDTO user = await db.Users.AsNoTracking().Include(i => i.step)
+            UserDTO user = await userRepository.Get().AsNoTracking().Include(i => i.step)
                 .FirstOrDefaultAsync(c => c.ChatId == chatid);
             return user != null ? user.step.NameOfStep : "null";
         }
-
+        
         public async ValueTask<int> GetCurrentActionStep(long chatid)
         {
-            UserDTO user = await db.Users.Include(i => i.step)
+            UserDTO user = await userRepository.Get().Include(i => i.step)
                 .FirstOrDefaultAsync(c => c.ChatId == chatid);
             return user.step.CurrentStep;
-
         }
-
+        
         public async Task RecoveryUser(long chatid)
         {
-            UserDTO user = await FindById(chatid);
+            UserDTO user = await userRepository.FindById(chatid);
             if (user == null)
                 await AuthenticateUser(chatid);
             else
             {
                 user = new UserDTO() { ChatId = chatid };
-                await Update(user);
+                await userRepository.Update(user);
             }
         }
         
         public async Task ChangeAction(long chatid, string nameAction, int step)
         {
-            UserDTO user = await db.Users.Include(i => i.step)
+            UserDTO user = await userRepository.Get().Include(i => i.step)
                 .FirstOrDefaultAsync(j => j.ChatId == chatid);
             if (user == null)
             {
                 await AuthenticateUser(chatid);
                 return;
             }
-            
+
             user.step.NameOfStep = nameAction;
             user.step.CurrentStep = step;
-            await Update(user);
+            await userRepository.Update(user);
         }
-
+        
         public async ValueTask<bool> IsAuthenticate(long chatid)
         {
-            return await FindById(chatid) != null ? true : false;
+            return await userRepository.FindById(chatid) != null ? true : false;
         }
 
         public async ValueTask<bool> IsUserRegistration(long chatid)
         {
-            ProposalDTO proposal = await db.proposalsDTO.FirstOrDefaultAsync(i => i.ChatId == chatid);
-            
+            ProposalDTO proposal = await proposalRepository.Get().FirstOrDefaultAsync(i => i.ChatId == chatid);
             if (proposal == null)
                 return false;
-            
             if (proposal.longtitude.HasValue && proposal.latitude.HasValue)
                 return true;
-            
             return false;
         }
-    }
+    }  
 }

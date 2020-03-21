@@ -7,6 +7,24 @@ namespace TeleDronBot.Bot
 {
     class KeyboardHandler
     {
+        public static IReplyMarkup PilotWithoutSubscribe_Markup()
+        {
+            return new ReplyKeyboardMarkup
+            {
+                Keyboard = new[]
+                {
+                    new[]
+                    {
+                        new KeyboardButton("Партнеры")
+                    },
+                    new[]
+                    {
+                    new KeyboardButton("Просмотр заказов")
+                    }
+                },
+                ResizeKeyboard = true
+            };
+        }
 
         public static IReplyMarkup Markup_Back_From_First_Action()
         {
@@ -23,7 +41,7 @@ namespace TeleDronBot.Bot
             };
         }
 
-        public static IReplyMarkup Markup_Start()
+        public static IReplyMarkup Markup_Start_AfterChange()
         {
             IReplyMarkup keyboard = new ReplyKeyboardMarkup
             {
@@ -43,6 +61,25 @@ namespace TeleDronBot.Bot
             return keyboard;
         }
 
+        public static IReplyMarkup Markup_BuisnessmanMenu()
+        {
+            return new ReplyKeyboardMarkup
+            {
+                Keyboard = new[]
+                {
+                    new[]
+                    {
+                        new KeyboardButton("Orders")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("New Task")
+                    }
+                },
+                ResizeKeyboard = true
+            };
+        }
+
         public static IReplyMarkup Markup_Start_Pilot_Payment_Mode()
         {
             IReplyMarkup keyboard = new ReplyKeyboardMarkup
@@ -56,6 +93,10 @@ namespace TeleDronBot.Bot
                     new[]
                     {
                         new KeyboardButton("Paid registration w/o insurance")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Back")
                     }
                 },
                 ResizeKeyboard = true
@@ -76,6 +117,10 @@ namespace TeleDronBot.Bot
                     new[]
                     {
                         new KeyboardButton("Corporate client")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Back")
                     }
                 },
                 ResizeKeyboard = true
@@ -95,6 +140,10 @@ namespace TeleDronBot.Bot
                     new[]
                     {
                         new KeyboardButton("W/o insurance")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Back")
                     }
                 },
                 ResizeKeyboard = true
@@ -114,13 +163,17 @@ namespace TeleDronBot.Bot
                     new[]
                     {
                         new KeyboardButton("Limited service (Free)")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Back")
                     }
                 },
                 ResizeKeyboard = true
             };
         }
 
-        public static IReplyMarkup Markup_After_Registration()
+        public static IReplyMarkup PilotWithSubscribe_Markup()
         {
             return new ReplyKeyboardMarkup
             {
@@ -149,7 +202,7 @@ namespace TeleDronBot.Bot
             };
         }
 
-        public static IReplyMarkup Start_For_Corporate()
+        public static IReplyMarkup AuthOrRegistration()
         {
             return new ReplyKeyboardMarkup
             {
@@ -157,15 +210,41 @@ namespace TeleDronBot.Bot
                 {
                     new[]
                     {
-                        new KeyboardButton("Private client")
+                        new KeyboardButton("Authorize")
                     },
                     new[]
                     {
-                        new KeyboardButton("Corporate client")
+                        new KeyboardButton("Register")
                     }
-                },
-                ResizeKeyboard = true
+                }
             };
+        }
+
+        public static IReplyMarkup ChangeKeyBoardPilot(int privilagie)
+        {
+            if (privilagie == 1)
+                return PilotWithoutSubscribe_Markup();
+            
+            if (privilagie == 2)
+                return PilotWithSubscribe_Markup();
+            
+            throw new Exception("incorrect value");
+        }
+        
+        public IReplyMarkup ChatConfirm()
+        {
+            var keyboard = new InlineKeyboardMarkup(new InlineKeyboardButton[][]
+               {
+                    new[]
+                    {
+                        new InlineKeyboardButton(){Text="Confirm",CallbackData="confirm"}
+                    },
+                    new[]
+                    {
+                        new InlineKeyboardButton(){Text="Cancel",CallbackData="cancel"}
+                    }
+               });
+            return keyboard;
         }
     }
 }

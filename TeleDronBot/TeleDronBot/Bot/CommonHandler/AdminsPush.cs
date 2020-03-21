@@ -32,7 +32,7 @@ namespace TeleDronBot.Bot.CommonHandler
             ProposalDTO proposal = await proposalRepository.FindById(chatid);
 
             int numberOfPurpost = await propose.GetCount();
-            UserDTO user = await userRepository.FirstElement(i => i.ChatId == proposal.ChatId);
+            UserDTO user = await userRepository.Get().FirstOrDefaultAsync(i => i.ChatId == proposal.ChatId);
 
             if (user == null)
                 throw new Exception("user is null");

@@ -4,17 +4,19 @@ using System.Text;
 using TeleDronBot.Bot;
 using TeleDronBot.Bot.CommonHandler;
 using TeleDronBot.DTO;
+using TeleDronBot.Providers;
+using TeleDronBot.Services;
 
 namespace TeleDronBot.Base.BaseClass
 {
-    class MainProvider : RepositoryProvider
+    class MainProvider : ServiceProvider
     {
         private AdminsPush _adminPush;
         private HubsHandler _hubsHandler;
         private CountProposeHandler _proposeHandler;
         private ManagerPush _managerPush;
-        
-        protected ManagerPush managerPush
+
+        public ManagerPush managerPush
         {
             get
             {
@@ -24,7 +26,9 @@ namespace TeleDronBot.Base.BaseClass
             }
         }
 
-        protected HubsHandler hubsHandler
+        protected CommandProvider _commandProvider;
+
+        public HubsHandler hubsHandler
         {
             get
             {
@@ -33,7 +37,8 @@ namespace TeleDronBot.Base.BaseClass
                 return _hubsHandler;
             }
         }
-        protected CountProposeHandler proposeHandler
+
+        public CountProposeHandler proposeHandler
         {
             get
             {
@@ -42,13 +47,24 @@ namespace TeleDronBot.Base.BaseClass
                 return _proposeHandler;
             }
         }
-        protected AdminsPush adminPush
+
+        public AdminsPush adminPush
         {
             get
             {
                 if (_adminPush == null)
                     _adminPush = new AdminsPush();
                 return _adminPush;
+            }
+        }
+
+        public CommandProvider commandProvider
+        {
+            get
+            {
+                if (_commandProvider == null)
+                    _commandProvider = new CommandProvider();
+                return _commandProvider;
             }
         }
     }
