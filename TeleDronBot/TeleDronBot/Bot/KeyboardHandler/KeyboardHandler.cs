@@ -15,11 +15,19 @@ namespace TeleDronBot.Bot
                 {
                     new[]
                     {
-                        new KeyboardButton("Партнеры")
+                        new KeyboardButton("New Order")
                     },
                     new[]
                     {
-                    new KeyboardButton("Просмотр заказов")
+                        new KeyboardButton("Partners")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Orders")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Back")
                     }
                 },
                 ResizeKeyboard = true
@@ -74,6 +82,10 @@ namespace TeleDronBot.Bot
                     new[]
                     {
                         new KeyboardButton("New Task")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Back")
                     }
                 },
                 ResizeKeyboard = true
@@ -181,6 +193,10 @@ namespace TeleDronBot.Bot
                 {
                     new[]
                     {
+                        new KeyboardButton("Orders")
+                    },
+                    new[]
+                    {
                         new KeyboardButton("Flight right away")
                     },
                     new[]
@@ -196,6 +212,10 @@ namespace TeleDronBot.Bot
                     new[]
                     {
                         new KeyboardButton("SOS")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Back")
                     }
                 },
                 ResizeKeyboard = true
@@ -230,8 +250,8 @@ namespace TeleDronBot.Bot
             
             throw new Exception("incorrect value");
         }
-        
-        public IReplyMarkup ChatConfirm()
+
+        public static IReplyMarkup ChatConfirm()
         {
             var keyboard = new InlineKeyboardMarkup(new InlineKeyboardButton[][]
                {
@@ -245,6 +265,25 @@ namespace TeleDronBot.Bot
                     }
                });
             return keyboard;
+        }
+
+        public static IReplyMarkup CallBackShowOrders()
+        {
+            return new InlineKeyboardMarkup(new InlineKeyboardButton[][]
+            {
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "New task" , CallbackData="RequestTask"}
+                },
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "⏩",CallbackData="Next"}
+                },
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "⏪",CallbackData="Back"}
+                }
+            });
         }
     }
 }

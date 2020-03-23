@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TeleDronBot.Base.BaseClass;
@@ -10,6 +11,12 @@ namespace TeleDronBot.Services
 {
     class UserService : RepositoryProvider
     {
+        public async Task<UserDTO> FindUserByPredicate(Func<UserDTO, bool> predicate)
+        {
+            IQueryable<UserDTO> users = userRepository.Get();
+            return users.Where(predicate).FirstOrDefault();
+        }
+
         public async ValueTask<UserDTO> FindById(long chatid)
         {
             return await userRepository.FindById(chatid);

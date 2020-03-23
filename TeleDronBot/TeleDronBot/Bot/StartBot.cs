@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TeleDronBot.Base.BaseClass;
 using TeleDronBot.Commons;
 using TeleDronBot.DTO;
 using TeleDronBot.Interfaces;
@@ -18,7 +19,8 @@ namespace TeleDronBot.Bot
         public void BotRun()
         {
             context.Database.EnsureCreated();
-            Services.ServiceProvider provider = new Services.ServiceProvider();
+            MainProvider provider = new MainProvider();
+
             client = new TelegramBotClient(Constant.Token);
             client.StartReceiving();
 

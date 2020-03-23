@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 using TeleDronBot.Base.BaseClass;
 using TeleDronBot.DTO;
 using TeleDronBot.Repository;
+using TeleDronBot.Services;
 using Telegram.Bot;
 
 namespace TeleDronBot.Bot.CommonHandler
 {
-    class AdminsPush : RepositoryProvider
+    class AdminsPush
     {
         private CountProposeHandler propose;
         
@@ -20,20 +21,20 @@ namespace TeleDronBot.Bot.CommonHandler
             propose = new CountProposeHandler();
         }
 
-        public async Task MessageRequisitionAsync(TelegramBotClient client, long chatid)
+        public async Task MessageRequisitionAsync(TelegramBotClient client, ServiceProvider provider, long chatid)
         {
-            int countAdmin = await adminRepository.CountAdmins();
-            
+            int countAdmin = await provider.adminService.CountAdmins();
+
             if (countAdmin == 0)
                 return;
-            
-            List<long> admins = await adminRepository.GetChatId();
 
-            ProposalDTO proposal = await proposalRepository.FindById(chatid);
+            List<long> admins = await provider.adminService.GetChatId();
+
+            ProposalDTO proposal = await provider.proposalService.FindById(chatid);
 
             int numberOfPurpost = await propose.GetCount();
-            UserDTO user = await userRepository.Get().FirstOrDefaultAsync(i => i.ChatId == proposal.ChatId);
-
+            UserDTO user = await provider.userService.FindUserByPredicate(i => i.ChatId == proposal.ChatId);
+            
             if (user == null)
                 throw new Exception("user is null");
 
@@ -47,8 +48,9 @@ namespace TeleDronBot.Bot.CommonHandler
 
             StorageDTO storage = new StorageDTO();
             storage.Message = message;
-            await storageRepository.Create(storage);
             
+            await provider.storageService.Create(storage);
+
             foreach (long _chatid in admins)
             {
                 await client.SendTextMessageAsync(_chatid, message);

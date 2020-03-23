@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using TeleDronBot.Base.BaseClass;
 using TeleDronBot.Bot.CommonHandler;
+using TeleDronBot.BusinessCommand;
 using TeleDronBot.Commons;
 using TeleDronBot.DTO;
 using TeleDronBot.Geolocation;
 using TeleDronBot.Interfaces.Bot;
 using TeleDronBot.Logs;
+using TeleDronBot.PilotCommands;
 using TeleDronBot.Repository;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -22,14 +24,18 @@ namespace TeleDronBot.Bot
         long chatid;
         TelegramBotClient client;
         MainProvider provider;
+        BusinessAction buisnessAction;
+        RegistrationPilotCommand registrationPilotsCommand;
+        ShowOrders showOrders;
 
         public MessageHandler(TelegramBotClient client, MainProvider provider)
         {
             this.client = client;
             this.provider = provider;
+            buisnessAction = new BusinessAction(provider, client);
+            registrationPilotsCommand = new RegistrationPilotCommand(client, provider);
+            showOrders = new ShowOrders(client, provider);
         }
-
-        #region PrivateHandlers
 
         #region BusinessRegistration
         
@@ -65,154 +71,6 @@ namespace TeleDronBot.Bot
             await client.SendTextMessageAsync(chatid, "Sample text", 0, false, false, 0, KeyboardHandler.Markup_Start_AfterChange());
         }
 
-        #region PaymentRegistration
-
-        private async Task CommandHandler_PaidRegistrationWithoutInsurance(UserDTO user, string message, MessageEventArgs messageObject)
-        {
-            long chatid = user.ChatId;
-            int currentStep = await provider.userService.GetCurrentActionStep(chatid);
-
-            DronDTO dron = new DronDTO();
-            ProposalDTO proposal = await provider.proposalService.FindById(chatid);
-
-            if (currentStep == 1)
-            {
-                user.FIO = message;
-                await provider.userService.Update(user);
-                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter mobile phone number");
-                return;
-            }
-            if (currentStep == 2)
-            {
-                user.Phone = message;
-                await provider.userService.Update(user);
-                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter drone type");
-                return;
-            }
-            if (currentStep == 3)
-            {
-                dron.Mark = message;
-                await dronRepository.Create(dron);
-                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter your address");
-                return;
-            }
-            if (currentStep == 4)
-            {
-                await proposalRepository.Create(user);
-                proposal.Address = message;
-                await provider.userService.Update(proposal);
-                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Your geolocation");
-                return;
-            }
-            if (currentStep == 5)
-            {
-                if (messageObject.Message.Location != null)
-                {
-                    proposal.longtitude = messageObject.Message.Location.Longitude;
-                    proposal.latitude = messageObject.Message.Location.Latitude;
-
-                    string realAdres = await GeolocateHandler.GetAddressFromCordinat(proposal.longtitude, proposal.latitude);
-
-                    proposal.RealAddress = realAdres;
-
-                    await proposalRepository.Update(proposal);
-                    await proposeHandler.ChangeProposeCount();
-
-                    user.PilotPrivilage = 1;
-                    await userRepository.Update(user);
-
-                    await adminPush.MessageRequisitionAsync(client, chatid);
-                }
-            }
-        }
-
-        private async Task CommandHandler_PaidRegistrationWithInsurance(UserDTO user, string message, MessageEventArgs messageObject = null)
-        {
-            long chatid = user.ChatId;
-            int currentStep = await provider.userService.GetCurrentActionStep(chatid);
-
-            DronDTO dron = new DronDTO();
-            ProposalDTO proposal = await provider.proposalService.FindById(chatid);
-
-            if (currentStep == 1)
-            {
-                user.FIO = message;
-                await provider.userService.Update(user);
-
-                await provider.userService.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
-
-                await client.SendTextMessageAsync(chatid, "Enter your tel.");
-                return;
-            }
-            if (currentStep == 2)
-            {
-                await proposalRepository.Create(user);
-
-                user.Phone = message;
-                await userRepository.Update(user);
-
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter your drone type");
-                return;
-            }
-            if (currentStep == 3)
-            {
-                dron.Mark = message;
-                await dronRepository.Create(dron);
-
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter insurance type");
-                return;
-            }
-            if (currentStep == 4)
-            {
-                proposal.TypeOfInsurance = message;
-
-                await proposalRepository.Update(proposal);
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter your address");
-                return;
-            }
-            if (currentStep == 5)
-            {
-                proposal.Address = message;
-                await proposalRepository.Update(proposal);
-                await userRepository.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Send your geolocation");
-                return;
-            }
-
-            if (currentStep == 6)
-            {
-                if (messageObject.Message.Location != null)
-                {
-                    proposal.longtitude = messageObject.Message.Location.Longitude;
-                    proposal.latitude = messageObject.Message.Location.Latitude;
-
-                    string realAdres = await GeolocateHandler.GetAddressFromCordinat(proposal.longtitude, proposal.latitude);
-                    proposal.RealAddress = realAdres;
-
-                    await proposalRepository.Update(proposal);
-
-                    await client.SendTextMessageAsync(chatid, "Waiting for payment"
-                        , 0, false, false, 0, KeyboardHandler.PilotWithSubscribe_Markup());
-
-                    await proposeHandler.ChangeProposeCount();
-
-                    user.PilotPrivilage = 2;
-                    await userRepository.Update(user);
-
-                    await adminPush.MessageRequisitionAsync(client, chatid);
-                    await client.SendTextMessageAsync(chatid, "Registration succeeded.");
-                }
-            }
-        }
-        #endregion
-        #endregion
 
         public async Task BaseHandlerMessage(MessageEventArgs message, string text)
         {
@@ -224,7 +82,7 @@ namespace TeleDronBot.Bot
 
             await provider.userService.AuthenticateUser(chatid);
 
-            await UserLogs.WriteLog(chatid, messageText);
+            //await UserLogs.WriteLog(chatid, messageText);
 
             bool isRegistration = await provider.userService.IsUserRegistration(chatid);
             
@@ -348,31 +206,42 @@ namespace TeleDronBot.Bot
                 return;
             }
 
+            if (messageText == "New task")
+            {
+                await provider.userService.ChangeAction(chatid, "Create new task", 1);
+                await client.SendTextMessageAsync(chatid, "Enter region");
+            }
+
+
             if (action != null)
             {
                 if (action == "Paid registration with insurance")
                 {
-                    await CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
+                    await registrationPilotsCommand.CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
                     return;
                 }
                 if (action == "Paid registration w/o insurance")
                 {
-                    await CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message);
-                    return;
+                    await registrationPilotsCommand.CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message); return;
                 }
                 if (action == "With insurance")
                 {
-                    await CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
+                    await registrationPilotsCommand.CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
                     return;
                 }
                 if (action == "W/o insurance")
                 {
-                    await CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message);
+                    await registrationPilotsCommand.CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message);
                     return;
                 }
                 if (action == "Coprorate client")
                 {
                     await CommandHandler_BuisnessRegistrationKorporativ(chatid, messageText, message);
+                    return;
+                }
+                if (action == "Create task")
+                {
+                    await buisnessAction.CreateTask(chatid, messageText, message);
                     return;
                 }
             }
