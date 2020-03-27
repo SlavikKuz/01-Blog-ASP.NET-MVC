@@ -6,14 +6,13 @@ using System.Text;
 
 namespace TeleDronBot.DTO
 {
-    class ShowOrdersDTO
+    class OfferDTO
     {
         [Key]
         public int Id { get; set; }
-
+        
         [ForeignKey("UserDTO")]
         public long ChatId { get; set; }
-        public int CurrentProductId { get; set; }
-        public int MessageId { get; set; }
+        public int TaskId { get; set; }
     }
 }

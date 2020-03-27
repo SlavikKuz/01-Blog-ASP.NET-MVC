@@ -9,20 +9,20 @@ using Telegram.Bot.Args;
 
 namespace TeleDronBot.BusinessCommand
 {
-    class BusinessAction
+    class CreateBuisnessTask
     {
         TelegramBotClient client;
         MainProvider provider;
-        public BusinessAction(MainProvider provider, TelegramBotClient client)
+        public CreateBuisnessTask(MainProvider provider, TelegramBotClient client)
         {
             this.provider = provider;
             this.client = client;
         }
         public async Task CreateTask(long chatid, string message, MessageEventArgs messageObject)
         {
-            bool isUserBuisnessman = await provider.buisnessTaskService.IsUserBusinessman(chatid);
+            bool isUserBuisnessman = await provider.buisnessTaskService.IsUserBuisnessman(chatid);
             int currentStep = await provider.userService.GetCurrentActionStep(chatid);
-            BusinessTaskDTO currTask = await provider.buisnessTaskService.FindTask(chatid);
+            BuisnessTaskDTO currTask = await provider.buisnessTaskService.FindTask(chatid);
             
             if (!isUserBuisnessman)
             {

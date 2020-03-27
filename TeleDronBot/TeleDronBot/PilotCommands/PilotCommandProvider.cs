@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using TeleDronBot.Base.BaseClass;
+using TeleDronBot.PilotCommands.Callbacks;
 using Telegram.Bot;
 
 namespace TeleDronBot.PilotCommands
@@ -12,6 +13,7 @@ namespace TeleDronBot.PilotCommands
 
         private RegistrationPilotCommand _registrationCommand;
         private ShowOrders _showOrders;
+        private RequestOfferCallBack _requestOffer;
 
         public RegistrationPilotCommand registrationCommand
         {
@@ -30,6 +32,16 @@ namespace TeleDronBot.PilotCommands
                 if (_showOrders == null)
                     _showOrders = new ShowOrders(client, provider);
                 return _showOrders;
+            }
+        }
+
+        public RequestOfferCallBack requestOffer
+        {
+            get
+            {
+                if (_requestOffer == null)
+                    _requestOffer = new RequestOfferCallBack(client, provider);
+                return _requestOffer;
             }
         }
     }

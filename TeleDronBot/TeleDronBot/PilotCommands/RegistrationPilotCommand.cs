@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TeleDronBot.Base.BaseClass;
 using TeleDronBot.Bot;
+using TeleDronBot.Commons;
 using TeleDronBot.DTO;
 using TeleDronBot.Geolocation;
 using Telegram.Bot;
@@ -35,11 +36,18 @@ namespace TeleDronBot.PilotCommands
             
             if (currentStep == 2)
             {
-                user.Phone = message;
-                await provider.userService.Update(user);
-                await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter drone type");
-                return;
+                if (RegularExpression.IsTelephoneCorrect(message))
+                {
+                    user.Phone = message;
+                    await provider.userService.Update(user);
+                    await provider.userService.ChangeAction(chatid, "Paid registarion w/o insurance", ++currentStep);
+                    await client.SendTextMessageAsync(chatid, "Enter drone type");
+                    return;
+                }
+                else
+                {
+                    await client.SendTextMessageAsync(chatid, "Wrong telephone number. Try again");
+                }
             }
             
             if (currentStep == 3)
@@ -78,7 +86,7 @@ namespace TeleDronBot.PilotCommands
                     user.PilotPrivilage = 1;
 
                     await provider.userService.Update(user);
-                    await provider.adminPush.MessageRequisitionAsync(client, provider, chatid);
+                    await provider.adminPush.MessageAboutRegistrationPilot(client, provider, chatid);
                 }
             }
         }
@@ -103,14 +111,20 @@ namespace TeleDronBot.PilotCommands
             }
             if (currentStep == 2)
             {
-                await provider.proposalService.Create(user);
-
-                user.Phone = message;
-
-                await provider.userService.Update(user);
-                await provider.userService.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter your drone type");
-                return;
+                if (RegularExpression.IsTelephoneCorrect(message))
+                {
+                    await provider.proposalService.Create(user);
+                    user.Phone = message;
+                    await provider.userService.Update(user);
+                    await provider.userService.ChangeAction(chatid, "Paid registration with insurance", ++currentStep);
+                    await client.SendTextMessageAsync(chatid, "Enter your drone type");
+                    return;
+                }
+                else
+                {
+                    await client.SendTextMessageAsync(chatid, "Wrong telephone number. Try again");
+                    return;
+                }
             }
             if (currentStep == 3)
             {
@@ -159,7 +173,7 @@ namespace TeleDronBot.PilotCommands
                     user.PilotPrivilage = 2;
 
                     await provider.userService.Update(user);
-                    await provider.adminPush.MessageRequisitionAsync(client, provider, chatid);
+                    await provider.adminPush.MessageAboutRegistrationPilot(client, provider, chatid);
 
                     await client.SendTextMessageAsync(chatid, "Registration succeeded.");
                 }

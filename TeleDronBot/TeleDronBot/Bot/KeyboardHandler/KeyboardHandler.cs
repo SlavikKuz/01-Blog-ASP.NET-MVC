@@ -7,6 +7,20 @@ namespace TeleDronBot.Bot
 {
     class KeyboardHandler
     {
+        public static IReplyMarkup EndDialog()
+        {
+            return new ReplyKeyboardMarkup
+            {
+                Keyboard = new[] {
+                new[]
+                {
+                    new KeyboardButton("End dialog")
+                },
+                },
+                ResizeKeyboard = true
+            };
+        }
+
         public static IReplyMarkup PilotWithoutSubscribe_Markup()
         {
             return new ReplyKeyboardMarkup
@@ -247,8 +261,8 @@ namespace TeleDronBot.Bot
             
             if (privilagie == 2)
                 return PilotWithSubscribe_Markup();
-            
-            throw new Exception("incorrect value");
+
+            throw new System.Exception("incorrect value");
         }
 
         public static IReplyMarkup ChatConfirm()
@@ -265,6 +279,36 @@ namespace TeleDronBot.Bot
                     }
                });
             return keyboard;
+        }
+
+        public static IReplyMarkup InviteUserToDialog()
+        {
+            return new InlineKeyboardMarkup(new InlineKeyboardButton[][]
+           {
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "Start dialog" , CallbackData="StartDialog"}
+                }
+           });
+        }
+
+        public static IReplyMarkup CallBackShowOrdersForBuisnessman()
+        {
+            return new InlineKeyboardMarkup(new InlineKeyboardButton[][]
+            {
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "Order" , CallbackData="RequestData"}
+                },
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "⏩", CallbackData="BuisnessNext"}
+                },
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "⏪", CallbackData="BuisnessBack"}
+                }
+            });
         }
 
         public static IReplyMarkup CallBackShowOrders()

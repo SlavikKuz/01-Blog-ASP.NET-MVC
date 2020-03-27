@@ -8,6 +8,7 @@ namespace TeleDronBot.Base.BaseClass
     class DbProvider<T>
     {
         private ApplicationContext _db;
+        
         protected ApplicationContext db
         {
             get

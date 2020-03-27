@@ -3,23 +3,24 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Args;
 
 namespace TeleDronBot.Base.BaseClass
 {
-    class BaseCommand
+    class BaseCallback
     {
         protected TelegramBotClient client;
         protected MainProvider provider;
 
-        public BaseCommand(TelegramBotClient client, MainProvider provider)
+        public BaseCallback(TelegramBotClient client, MainProvider provider)
         {
             this.client = client;
             this.provider = provider;
         }
 
-        public virtual Task Request(long chatid)
+        public virtual Task SendCallBack(CallbackQueryEventArgs callback)
         {
-            throw new System.Exception("Method has to be override");
+            throw new System.Exception("This method has to be override");
         }
     }
 }

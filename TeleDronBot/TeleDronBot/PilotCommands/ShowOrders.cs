@@ -14,10 +14,36 @@ namespace TeleDronBot.PilotCommands
     {
         public ShowOrders(TelegramBotClient client, MainProvider provider) : base(client, provider) { }
 
-        public async Task ShowAllOrders(long chatid, MessageEventArgs messageObject)
+        public async Task ShowAllOrders(long chatid, MessageEventArgs messageObject, bool isBusinessman = false)
         {
-            int currentStep = await provider.userService.GetCurrentActionStep(chatid);
-            int countTask = await provider.buisnessTaskService.CountTask();
+            int countTask;
+            BuisnessTaskDTO task;
+            string message;
+            
+            // for business 
+            if (isBusinessman)
+            {
+                countTask = await provider.buisnessTaskService.CountTask(chatid);
+                
+                if (countTask == 0)
+                {
+                    await client.SendTextMessageAsync(chatid, "No tasks");
+                }
+
+                task = await provider.buisnessTaskService.GetFirstElement(chatid);
+
+                message = $"Order: {task.Id} \n" +
+                   $"Region: {task.Region} \n" +
+                   $"Description: {task.Description} \n" +
+                   $"Sum: {task.Sum}";
+                
+                await provider.showOrderService.SetDefaultProduct(chatid, true);
+                await provider.showOrderService.ChangeMessageId(chatid, messageObject.Message.MessageId);
+                await client.SendTextMessageAsync(chatid, message, 0, false, false, 0, KeyboardHandler.CallBackShowOrdersForBuisnessman());
+
+                return;
+            }
+            countTask = await provider.buisnessTaskService.CountTask();
 
             if (countTask == 0)
             {
@@ -26,32 +52,17 @@ namespace TeleDronBot.PilotCommands
                 return;
             }
             
-            BuisnessTaskDTO task = await provider.buisnessTaskService.GetFirstElement();
-            string message = $"Task: {task.Id} " +
-                $"Region: {task.Region} " +
-                $"Description: {task.Description} " +
+            task = await provider.buisnessTaskService.GetFirstElement();
+            message = $"Task: {task.Id}  \n" +
+                $"Region: {task.Region}  \n" +
+                $"Description: {task.Description}  \n" +
                 $"Price: {task.Sum}";
 
-            if (countTask == 1)
-            {
-                await client.SendTextMessageAsync(chatid, message);
-                return;
-            }
+            await provider.showOrderService.SetDefaultProduct(chatid);
+            await provider.showOrderService.ChangeMessageId(chatid, messageObject.Message.MessageId);
 
             await client.SendTextMessageAsync(chatid, message, 0, false, false, 0, KeyboardHandler.CallBackShowOrders());
         }
     }
-    
-    class CallBackOrders : ShowOrders
-    {
-        public CallBackOrders(TelegramBotClient client, MainProvider provider) : base(client, provider) { }
-
-        public async Task ShowOrdersCallBack(CallbackQueryEventArgs callback)
-        {
-            if (callback.CallbackQuery.Data == "Next")
-            {
-                BuisnessTaskDTO task = await provider.s
-            }
-        }
-    }
+   
 }

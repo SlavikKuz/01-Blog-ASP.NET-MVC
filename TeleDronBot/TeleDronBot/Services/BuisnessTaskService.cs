@@ -17,22 +17,38 @@ namespace TeleDronBot.Services
         public async Task Update(BuisnessTaskDTO task)
         {
             if (task == null)
-                throw new Exception("task cannot be null");
+                throw new System.Exception("task cannot be null");
             await buisnessTaskRepository.Update(task);
         }
+
+        public async ValueTask<BuisnessTaskDTO> GetCurrentTask(long chatid)
+        {
+            ShowOrdersDTO order = await showOrdersRepository.Get().FirstOrDefaultAsync(i => i.ChatId == chatid);
+            return await buisnessTaskRepository.Get().FirstOrDefaultAsync(i => i.Id == order.CurrentProductId);
+        }
+
+        public async ValueTask<int> CountTask(long chatid) =>
+            await buisnessTaskRepository.Get().Where(i => i.ChatId == chatid).CountAsync();
 
         public async ValueTask<BuisnessTaskDTO> GetFirstElement() =>
             await buisnessTaskRepository.Get().FirstOrDefaultAsync();
 
+        public async ValueTask<BuisnessTaskDTO> GetFirstElement(long chatid) =>
+            await buisnessTaskRepository.Get().FirstOrDefaultAsync(i => i.ChatId == chatid);
+
+        public async ValueTask<BuisnessTaskDTO> FindTaskByTaskId(int id) =>
+            await buisnessTaskRepository.Get().FirstOrDefaultAsync(i => i.Id == id);
+
+
         public async ValueTask<BuisnessTaskDTO> FindTask(long chatid)
         {
-            return buisnessTaskRepository.Get().FirstOrDefault(i => i.ChatId == chatid);
+            return await buisnessTaskRepository.Get().FirstOrDefaultAsync(i => i.ChatId == chatid);
         }
         
         public async Task Create(BuisnessTaskDTO task)
         {
             if (task.ChatId == 0 || task.Region == null)
-                throw new Exception("Incorrect data");
+                throw new System.Exception("Incorrect data");
             await buisnessTaskRepository.Create(task);
         }
         

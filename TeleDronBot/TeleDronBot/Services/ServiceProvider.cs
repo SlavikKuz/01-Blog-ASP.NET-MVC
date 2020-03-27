@@ -15,6 +15,28 @@ namespace TeleDronBot.Services
         private StepService _stepService;
         private StorageService _storageService;
         private ProposalService _proposalService;
+        private ShowOrderService _showOrderService;
+        private OfferService _offerService;
+
+        public OfferService offerService
+        {
+            get
+            {
+                if (_offerService == null)
+                    _offerService = new OfferService();
+                return _offerService;
+            }
+        }
+
+        public ShowOrderService showOrderService
+        {
+            get
+            {
+                if (_showOrderService == null)
+                    _showOrderService = new ShowOrderService();
+                return _showOrderService;
+            }
+        }
 
         public ProposalService proposalService
         {

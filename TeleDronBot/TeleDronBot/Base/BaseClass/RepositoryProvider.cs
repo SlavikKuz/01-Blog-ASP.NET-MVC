@@ -17,6 +17,17 @@ namespace TeleDronBot.Base.BaseClass
         private ManagerRepository _managerRepository;
         private BuisnessTaskRepository _buisnessTaskRepository;
         private ShowOrdersRepository _showOrdersRepository;
+        private OfferRepository _offerRepository;
+
+        protected OfferRepository offerRepository
+        {
+            get
+            {
+                if (_offerRepository == null)
+                    _offerRepository = new OfferRepository();
+                return _offerRepository;
+            }
+        }
 
         protected ShowOrdersRepository showOrdersRepository
         {

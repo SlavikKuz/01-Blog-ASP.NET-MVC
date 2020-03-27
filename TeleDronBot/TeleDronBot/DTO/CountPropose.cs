@@ -19,7 +19,7 @@ namespace TeleDronBot.DTO
 
     class CountProposeHandler : RepositoryProvider
     {
-        public async static ValueTask<int> GetCount()
+        public async ValueTask<int> GetCount()
         {
             CountPropose c = await countProposeRepository.Get().FirstOrDefaultAsync();
             return c.Count;

@@ -12,7 +12,6 @@ namespace TeleDronBot.Base.BaseClass
     class MainProvider : ServiceProvider
     {
         private AdminsPush _adminPush;
-        private HubsHandler _hubsHandler;
         private CountProposeHandler _proposeHandler;
         private ManagerPush _managerPush;
 
@@ -27,16 +26,6 @@ namespace TeleDronBot.Base.BaseClass
         }
 
         protected CommandProvider _commandProvider;
-
-        public HubsHandler hubsHandler
-        {
-            get
-            {
-                if (_hubsHandler == null)
-                    _hubsHandler = new HubsHandler();
-                return _hubsHandler;
-            }
-        }
 
         public CountProposeHandler proposeHandler
         {
@@ -55,16 +44,6 @@ namespace TeleDronBot.Base.BaseClass
                 if (_adminPush == null)
                     _adminPush = new AdminsPush();
                 return _adminPush;
-            }
-        }
-
-        public CommandProvider commandProvider
-        {
-            get
-            {
-                if (_commandProvider == null)
-                    _commandProvider = new CommandProvider();
-                return _commandProvider;
             }
         }
     }

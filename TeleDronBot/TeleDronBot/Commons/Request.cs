@@ -25,7 +25,7 @@ namespace TeleDronBot.Commons
         protected void CheckNullable(object o)
         {
             if (o is null)
-                throw new Exception("value is null");
+                throw new System.Exception("value is null");
         }
     }
     class GeolocateRequest : BaseRequest
@@ -69,7 +69,7 @@ namespace TeleDronBot.Commons
             }
             else
             {
-                throw new Exception("Incorrect format");
+                throw new System.Exception("Incorrect format");
             }
         }
     }

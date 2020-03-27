@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TeleDronBot.Interfaces
 {
-    interface IBaseProvider<T> where T : class
+    interface IBaseProvider<T>
     {
         Task Update(T item);
         Task Delete(T item);

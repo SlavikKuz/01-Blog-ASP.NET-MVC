@@ -21,7 +21,7 @@ namespace TeleDronBot.Bot.CommonHandler
             propose = new CountProposeHandler();
         }
 
-        public async Task MessageRequisitionAsync(TelegramBotClient client, ServiceProvider provider, long chatid)
+        public async Task MessageAboutRegistrationPilot(TelegramBotClient client, ServiceProvider provider, long chatid)
         {
             int countAdmin = await provider.adminService.CountAdmins();
 
@@ -36,20 +36,15 @@ namespace TeleDronBot.Bot.CommonHandler
             UserDTO user = await provider.userService.FindUserByPredicate(i => i.ChatId == proposal.ChatId);
             
             if (user == null)
-                throw new Exception("user is null");
+                throw new System.Exception("user is null");
 
-            string message = $"Application {propose.GetCount()}\n" +
+            string message = $"Pilots: {propose.GetCount()}\n" +
                 $"Pilot №{proposal.ChatId} is registered\n " +
                 $"Name:{user.FIO}\n " +
                 $"Tel.:{user.Phone}\n " +
                 $"Insurance:{proposal.TypeOfInsurance}\n " +
                 $"Address:{proposal.Address}\n " +
                 $"Address, geolocation:{proposal.RealAddress}";
-
-            StorageDTO storage = new StorageDTO();
-            storage.Message = message;
-            
-            await provider.storageService.Create(storage);
 
             foreach (long _chatid in admins)
             {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TeleDronBot.Base.BaseClass;
 using TeleDronBot.Bot.CommonHandler;
 using TeleDronBot.BusinessCommand;
+using TeleDronBot.Chat;
 using TeleDronBot.Commons;
 using TeleDronBot.DTO;
 using TeleDronBot.Geolocation;
@@ -24,17 +25,21 @@ namespace TeleDronBot.Bot
         long chatid;
         TelegramBotClient client;
         MainProvider provider;
-        BusinessAction buisnessAction;
+        CreateBuisnessTask buisnessAction;
         RegistrationPilotCommand registrationPilotsCommand;
         ShowOrders showOrders;
+
+        StopChat stopChat;
 
         public MessageHandler(TelegramBotClient client, MainProvider provider)
         {
             this.client = client;
             this.provider = provider;
-            buisnessAction = new BusinessAction(provider, client);
+            buisnessAction = new CreateBuisnessTask(provider, client);
             registrationPilotsCommand = new RegistrationPilotCommand(client, provider);
             showOrders = new ShowOrders(client, provider);
+
+            stopChat = new StopChat(client, provider);
         }
 
         #region BusinessRegistration
@@ -56,12 +61,19 @@ namespace TeleDronBot.Bot
 
             if (currentStep == 2)
             {
-                user.Phone = message;
-                user.BusinessPrivilage = 1;
-                await provider.userService.Update(user);
-                await client.SendTextMessageAsync(chatid, "Registation succeeded");
-                await provider.managerPush.SendMessage(client, chatid);
-                return;
+                if (RegularExpression.IsTelephoneCorrect(message))
+                {
+                    user.Phone = message;
+                    user.BusinessPrivilage = 1;
+                    await provider.userService.Update(user);
+                    await client.SendTextMessageAsync(chatid, "Registered", 0, false, false, 0, KeyboardHandler.Markup_BuisnessmanMenu());
+                    await provider.managerPush.SendMessage(client, chatid);
+                    return;
+                }
+                else
+                {
+                    await client.SendTextMessageAsync(chatid, "Wrong telephone number");
+                }
             }
         }
         #endregion
@@ -85,7 +97,22 @@ namespace TeleDronBot.Bot
             //await UserLogs.WriteLog(chatid, messageText);
 
             bool isRegistration = await provider.userService.IsUserRegistration(chatid);
-            
+
+            if (messageText == "End dialog")
+            {
+                await stopChat.Request(chatid);
+            }
+
+            if (await provider.hubService.IsChatActive(chatid))
+            {
+                long[] arrChatid = await provider.hubService.GetChatId(chatid);
+
+                long chatIdRecive = arrChatid[0] == chatid ? arrChatid[1] : arrChatid[0];
+                await client.SendTextMessageAsync(chatIdRecive, messageText);
+
+                return;
+            }
+
             if (messageText == "Back")
             {
                 await provider.userService.ChangeAction(chatid, "NULL", 0);
@@ -110,7 +137,12 @@ namespace TeleDronBot.Bot
                 await client.SendTextMessageAsync(chatid, "You are already registered", 0, false, false, 0, KeyboardHandler.Markup_BuisnessmanMenu());
                 return;
             }
-            
+
+            if (messageText == "Flight right now")
+            {
+
+            }
+
             if (messageText == "Pilot")
             {
                 if (user.PilotPrivilage == 0)
@@ -123,6 +155,7 @@ namespace TeleDronBot.Bot
                 {
                     await client.SendTextMessageAsync(chatid, "You logged in as a pilot",
                         0, false, false, 0, KeyboardHandler.ChangeKeyBoardPilot(user.PilotPrivilage));
+                    return;
                 }
             }
 
@@ -136,6 +169,7 @@ namespace TeleDronBot.Bot
             {
                 await client.SendTextMessageAsync(chatid, "There are several options for registration",
                     0, false, false, 0, KeyboardHandler.Markup_Start_Pilot_UnBuyer_Mode());
+                return;
             }
 
             #region Paid registration for pilots
@@ -153,6 +187,7 @@ namespace TeleDronBot.Bot
                 await provider.userService.ChangeAction(chatid, "W/o insurance", 1);
                 await client.SendTextMessageAsync(chatid, "Enter your name", 
                     0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
+                return;
             }
 
             if (messageText == "Paid registration with insurance")
@@ -187,7 +222,8 @@ namespace TeleDronBot.Bot
             }
             if (messageText == "Private")
             {
-
+                await provider.userService.ChangeAction(chatid, "Corporate registration", 1);
+                await client.SendTextMessageAsync(chatid, "Enter your name", 0, false, false, 0, KeyboardHandler.Markup_Back_From_First_Action());
             }
             #endregion
 
@@ -212,6 +248,15 @@ namespace TeleDronBot.Bot
                 await client.SendTextMessageAsync(chatid, "Enter region");
             }
 
+            if (messageText == "Orders")
+            {
+                await showOrders.ShowAllOrders(chatid, message);
+            }
+
+            if (messageText == "YourOrders")
+            {
+                await showOrders.ShowAllOrders(chatid, message, true);
+            }
 
             if (action != null)
             {

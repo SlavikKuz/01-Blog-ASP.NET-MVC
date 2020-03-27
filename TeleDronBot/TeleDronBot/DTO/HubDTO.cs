@@ -8,6 +8,8 @@ namespace TeleDronBot.DTO
     class HubDTO
     {
         [Key]
+        public int Id { get; set; }
+
         public long ChatIdCreater { get; set; }
         public long ChatIdReceiver { get; set; }
 

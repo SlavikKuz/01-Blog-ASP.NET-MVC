@@ -27,7 +27,7 @@ namespace TeleDronBot.Bot
             List<string> commandList = CommandList.GetCommands();
             var scope = new ServiceCollection()
                 .AddScoped<IMessageHandler, MessageHandler>(x => new MessageHandler(client, provider))
-                .AddScoped<ICallbackHandler, CallBackHandler>(i => new CallBackHandler(client)).BuildServiceProvider();
+                .AddScoped<ICallbackHandler, CallBackHandler>(i => new CallBackHandler(client, provider)).BuildServiceProvider();
             
             client.OnCallbackQuery += async (object sender, CallbackQueryEventArgs args) =>
             {
@@ -38,7 +38,14 @@ namespace TeleDronBot.Bot
             client.OnMessage += async (object sender, MessageEventArgs args) =>
             {
                 var handler = scope.GetService<IMessageHandler>();
-                await handler.BaseHandlerMessage(args, args.Message.Text);
+                try
+                {
+                    await handler.BaseHandlerMessage(args, args.Message.Text);
+                }
+                catch (System.Exception ex)
+                {
+                    await client.SendTextMessageAsync(325820574, ex.Message);
+                }
             };
         }
     }

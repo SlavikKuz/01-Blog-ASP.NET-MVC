@@ -19,6 +19,7 @@ namespace TeleDronBot.DTO
         public DbSet<ManagerDTO> Managers { get; set; }
         public DbSet<BuisnessTaskDTO> BusinessTasks { get; set; }
         public DbSet<ShowOrdersDTO> showOrdersDTO { get; set; }
+        public DbSet<OfferDTO> offers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
