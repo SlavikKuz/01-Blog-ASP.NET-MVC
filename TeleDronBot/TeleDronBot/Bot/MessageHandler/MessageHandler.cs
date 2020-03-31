@@ -101,6 +101,7 @@ namespace TeleDronBot.Bot
             if (messageText == "End dialog")
             {
                 await stopChat.Request(chatid);
+                return;
             }
 
             if (await provider.hubService.IsChatActive(chatid))
@@ -157,6 +158,11 @@ namespace TeleDronBot.Bot
                         0, false, false, 0, KeyboardHandler.ChangeKeyBoardPilot(user.PilotPrivilage));
                     return;
                 }
+            }
+
+            if (messageText == "Pilots near")
+            {
+                return;
             }
 
             if (messageText == "Full access paid")

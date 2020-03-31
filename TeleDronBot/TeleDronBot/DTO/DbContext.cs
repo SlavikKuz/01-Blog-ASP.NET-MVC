@@ -20,6 +20,8 @@ namespace TeleDronBot.DTO
         public DbSet<BuisnessTaskDTO> BusinessTasks { get; set; }
         public DbSet<ShowOrdersDTO> showOrdersDTO { get; set; }
         public DbSet<OfferDTO> offers { get; set; }
+        public DbSet<SosDTO> sosTable { get; set; }
+        public DbSet<ShowUsersDTO> showUsersDTO { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

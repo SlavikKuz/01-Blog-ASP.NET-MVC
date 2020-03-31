@@ -174,8 +174,10 @@ namespace TeleDronBot.PilotCommands
 
                     await provider.userService.Update(user);
                     await provider.adminPush.MessageAboutRegistrationPilot(client, provider, chatid);
+                    await provider.userService.ChangeAction(chatid, "NULL", 0);
 
                     await client.SendTextMessageAsync(chatid, "Registration succeeded.");
+                    return;
                 }
             }
         }

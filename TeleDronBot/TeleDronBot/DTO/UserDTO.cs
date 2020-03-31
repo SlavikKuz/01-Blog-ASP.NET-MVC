@@ -23,6 +23,7 @@ namespace TeleDronBot.DTO
         public int IsRegister { get; set; }
         public int PilotPrivilage { get; set; }
         public int BusinessPrivilage { get; set; }
+        public int IdForShow { get; set; }
 
         public ICollection<ProposalDTO> proposals { get; set; }
         public UserDTO()

@@ -39,6 +39,7 @@ namespace TeleDronBot.BusinessCommand
                     user.Phone = message;
                     user.BusinessPrivilage = 1;
                     await provider.userService.Update(user);
+                    await provider.userService.ChangeAction(chatid, "NULL", 0);
                     await client.SendTextMessageAsync(chatid, "Registered", 0, false, false, 0, KeyboardHandler.Markup_BuisnessmanMenu());
                     await provider.managerPush.SendMessage(client, chatid);
                     return;
