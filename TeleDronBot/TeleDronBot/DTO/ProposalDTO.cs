@@ -18,6 +18,7 @@ namespace TeleDronBot.DTO
 
         public string Address { get; set; }
         public string RealAddress { get; set; }
+        public string Region { get; set; }
 
         public float? longtitude { get; set; }
         public float? latitude { get; set; }

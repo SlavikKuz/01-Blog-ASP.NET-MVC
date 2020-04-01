@@ -78,6 +78,7 @@ namespace TeleDronBot.PilotCommands
 
                     string realAdres = await GeolocateHandler.GetAddressFromCordinat(proposal.longtitude, proposal.latitude);
 
+                    proposal.Region = GetGeolocateRegion.GetRegion(realAdres);
                     proposal.RealAddress = realAdres;
 
                     await provider.proposalService.Update(proposal);
@@ -161,6 +162,8 @@ namespace TeleDronBot.PilotCommands
                     proposal.latitude = messageObject.Message.Location.Latitude;
 
                     string realAdres = await GeolocateHandler.GetAddressFromCordinat(proposal.longtitude, proposal.latitude);
+                    
+                    proposal.Region = GetGeolocateRegion.GetRegion(realAdres);
                     proposal.RealAddress = realAdres;
 
                     await provider.proposalService.Update(proposal);
@@ -175,7 +178,10 @@ namespace TeleDronBot.PilotCommands
                     await provider.userService.Update(user);
                     await provider.adminPush.MessageAboutRegistrationPilot(client, provider, chatid);
                     await provider.userService.ChangeAction(chatid, "NULL", 0);
-
+                    
+                    string region = GetGeolocateRegion.GetRegion(realAdres);
+                    
+                    await provider.regionService.Create(region);
                     await client.SendTextMessageAsync(chatid, "Registration succeeded.");
                     return;
                 }

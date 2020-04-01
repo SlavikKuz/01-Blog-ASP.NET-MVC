@@ -11,7 +11,6 @@ namespace TeleDronBot.DTO
         public DbSet<StepDTO> Steps { get; set; }
         public DbSet<DronDTO> Drons { get; set; }
         public DbSet<HubDTO> Hubs { get; set; }
-        public DbSet<UsersDronsInclude> usersDronsIncludes { get; set; }
         public DbSet<AdminDTO> Admins { get; set; }
         public DbSet<ProposalDTO> proposalsDTO { get; set; }
         public DbSet<CountPropose> CountPurpose { get; set; }
@@ -22,6 +21,7 @@ namespace TeleDronBot.DTO
         public DbSet<OfferDTO> offers { get; set; }
         public DbSet<SosDTO> sosTable { get; set; }
         public DbSet<ShowUsersDTO> showUsersDTO { get; set; }
+        public DbSet<RegionsDTO> regions { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

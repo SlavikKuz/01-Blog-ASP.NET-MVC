@@ -20,6 +20,17 @@ namespace TeleDronBot.Base.BaseClass
         private OfferRepository _offerRepository;
         private sosTableRepository _sosTableRepository;
         private ShowUserRepository _showUserRepository;
+        private RegionsRepository _regionsRepository;
+
+        protected RegionsRepository regionsRepository
+        {
+            get
+            {
+                if (_regionsRepository == null)
+                    _regionsRepository = new RegionsRepository();
+                return _regionsRepository;
+            }
+        }
 
         protected ShowUserRepository showUserRepository
         {

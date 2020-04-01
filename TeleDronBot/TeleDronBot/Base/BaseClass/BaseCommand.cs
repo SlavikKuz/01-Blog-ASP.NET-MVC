@@ -17,9 +17,5 @@ namespace TeleDronBot.Base.BaseClass
             this.provider = provider;
         }
 
-        public virtual Task Request(long chatid)
-        {
-            throw new System.Exception("Method has to be override");
-        }
     }
 }

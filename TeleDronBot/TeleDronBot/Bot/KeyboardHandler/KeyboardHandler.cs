@@ -7,6 +7,40 @@ namespace TeleDronBot.Bot
 {
     class KeyboardHandler
     {
+        public static IReplyMarkup ShowPartnersPilot()
+        {
+            return new ReplyKeyboardMarkup
+            {
+                Keyboard = new[]
+                {
+                    new[]
+                    {
+                        new KeyboardButton("Geolocation")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Choose by region")
+                    }
+                },
+                ResizeKeyboard = true
+            };
+        }
+        
+        public static IReplyMarkup ShowPartners()
+        {
+            return new ReplyKeyboardMarkup
+            {
+                Keyboard = new[]
+                {
+                    new[]
+                    {
+                        new KeyboardButton("List of Pilots")
+                    },
+                },
+                ResizeKeyboard = true
+            };
+        }
+
         public static IReplyMarkup EndDialog()
         {
             return new ReplyKeyboardMarkup

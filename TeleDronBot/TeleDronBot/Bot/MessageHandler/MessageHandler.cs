@@ -13,6 +13,7 @@ using TeleDronBot.Geolocation;
 using TeleDronBot.Interfaces.Bot;
 using TeleDronBot.Logs;
 using TeleDronBot.PilotCommands;
+using TeleDronBot.PilotCommands.Callbacks;
 using TeleDronBot.Repository;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -31,6 +32,8 @@ namespace TeleDronBot.Bot
 
         StopChat stopChat;
 
+        ShowUsersCommand showUserCommand;
+
         public MessageHandler(TelegramBotClient client, MainProvider provider)
         {
             this.client = client;
@@ -38,6 +41,7 @@ namespace TeleDronBot.Bot
             buisnessAction = new CreateBuisnessTask(provider, client);
             registrationPilotsCommand = new RegistrationPilotCommand(client, provider);
             showOrders = new ShowOrders(client, provider);
+            showUserCommand = new ShowUsersCommand(client, provider);
 
             stopChat = new StopChat(client, provider);
         }
@@ -162,6 +166,8 @@ namespace TeleDronBot.Bot
 
             if (messageText == "Pilots near")
             {
+                await provider.userService.ChangeAction(chatid, "Pilots near", 1);
+                await showUserCommand.Response(message);
                 return;
             }
 
@@ -259,13 +265,17 @@ namespace TeleDronBot.Bot
                 await showOrders.ShowAllOrders(chatid, message);
             }
 
-            if (messageText == "YourOrders")
+            if (messageText == "Your Orders")
             {
                 await showOrders.ShowAllOrders(chatid, message, true);
             }
 
             if (action != null)
             {
+                if (action == "Pilots near")
+                {
+                    await showUserCommand.Response(message);
+                }
                 if (action == "Paid registration with insurance")
                 {
                     await registrationPilotsCommand.CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);

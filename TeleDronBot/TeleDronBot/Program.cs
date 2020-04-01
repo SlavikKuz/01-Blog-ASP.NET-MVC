@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using TeleDronBot.Bot;
+using TeleDronBot.Commons;
 using TeleDronBot.Geolocation;
 using TeleDronBot.Logs;
 
@@ -15,10 +16,15 @@ namespace TeleDronBot
                 UserLogs.GetLogs(chatid).ToList().ForEach((s) => Console.WriteLine(s));
             }
         }
-       
+
+        static async void T()
+        {
+            Console.WriteLine(GetGeolocateRegion.GetRegion("xxxxx address"));
+        }
 
         static void Main(string[] args)
         {
+            T();
             Console.WriteLine("Press 1 to start TeleBot");
             Console.WriteLine("Press 2 to see user logs");
             if (Convert.ToInt32(Console.ReadLine()) == 1)
