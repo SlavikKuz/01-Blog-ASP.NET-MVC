@@ -26,60 +26,22 @@ namespace TeleDronBot.Bot
         long chatid;
         TelegramBotClient client;
         MainProvider provider;
-        CreateBuisnessTask buisnessAction;
-        RegistrationPilotCommand registrationPilotsCommand;
-        ShowOrders showOrders;
 
+        CommandProvider commandProvider;
         StopChat stopChat;
 
         ShowUsersCommand showUserCommand;
 
-        public MessageHandler(TelegramBotClient client, MainProvider provider)
+        public MessageHandler(TelegramBotClient client, MainProvider provider, CommandProvider commandProvider)
         {
             this.client = client;
             this.provider = provider;
-            buisnessAction = new CreateBuisnessTask(provider, client);
-            registrationPilotsCommand = new RegistrationPilotCommand(client, provider);
-            showOrders = new ShowOrders(client, provider);
-            showUserCommand = new ShowUsersCommand(client, provider);
+            this.commandProvider = commandProvider;
 
             stopChat = new StopChat(client, provider);
         }
 
         #region BusinessRegistration
-        
-        private async Task CommandHandler_BuisnessRegistrationKorporativ(long chatid, string message, MessageEventArgs messageObject)
-        {
-            int currentStep = await provider.userService.GetCurrentActionStep(chatid);
-            UserDTO user = await provider.userService.FindById(chatid);
-            DronDTO dron = new DronDTO();
-
-            if (currentStep == 1)
-            {
-                user.FIO = message;
-                await provider.userService.Update(user);
-                await provider.userService.ChangeAction(chatid, "Corporate client registration", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "Enter your telephone number");
-                return;
-            }
-
-            if (currentStep == 2)
-            {
-                if (RegularExpression.IsTelephoneCorrect(message))
-                {
-                    user.Phone = message;
-                    user.BusinessPrivilage = 1;
-                    await provider.userService.Update(user);
-                    await client.SendTextMessageAsync(chatid, "Registered", 0, false, false, 0, KeyboardHandler.Markup_BuisnessmanMenu());
-                    await provider.managerPush.SendMessage(client, chatid);
-                    return;
-                }
-                else
-                {
-                    await client.SendTextMessageAsync(chatid, "Wrong telephone number");
-                }
-            }
-        }
         #endregion
 
         private async Task CommandHandler_Start(long chatid)
@@ -143,6 +105,14 @@ namespace TeleDronBot.Bot
                 return;
             }
 
+            if (messageText == "SOS")
+            {
+                await client.SendTextMessageAsync(chatid, "Select option", 0, false, false, 0, KeyboardHandler.VariantSOS());
+                await provider.userService.ChangeAction(chatid, "SOS", 0);
+                await commandProvider.pilotCommandProvider.sosCommand.SosHandler(message);
+                return;
+            }
+
             if (messageText == "Flight right now")
             {
 
@@ -167,7 +137,7 @@ namespace TeleDronBot.Bot
             if (messageText == "Pilots near")
             {
                 await provider.userService.ChangeAction(chatid, "Pilots near", 1);
-                await showUserCommand.Response(message);
+                await commandProvider.pilotCommandProvider.showUsersCommand.Response(message);
                 return;
             }
 
@@ -262,47 +232,54 @@ namespace TeleDronBot.Bot
 
             if (messageText == "Orders")
             {
-                await showOrders.ShowAllOrders(chatid, message);
+                await commandProvider.pilotCommandProvider.showOrders.ShowAllOrders(chatid, message);
             }
 
             if (messageText == "Your Orders")
             {
-                await showOrders.ShowAllOrders(chatid, message, true);
+                await commandProvider.pilotCommandProvider.showOrders.ShowAllOrders(chatid, message, true);
             }
 
             if (action != null)
             {
+                if (action == "SOS")
+                {
+                    await commandProvider.pilotCommandProvider.sosCommand.SosHandler(message);
+                    return;
+                }
                 if (action == "Pilots near")
                 {
-                    await showUserCommand.Response(message);
+                    await commandProvider.pilotCommandProvider.showUsersCommand.Response(message);
+                    return;
                 }
                 if (action == "Paid registration with insurance")
                 {
-                    await registrationPilotsCommand.CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
+                    await commandProvider.pilotCommandProvider.registrationCommand.CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
                     return;
                 }
                 if (action == "Paid registration w/o insurance")
                 {
-                    await registrationPilotsCommand.CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message); return;
+                    await commandProvider.pilotCommandProvider.registrationCommand.CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message);
+                    return;
                 }
                 if (action == "With insurance")
                 {
-                    await registrationPilotsCommand.CommandHandler_PaidRegistrationWithInsurance(user, messageText, message);
+                    await commandProvider.pilotCommandProvider.registrationCommand.CommandHandler_PaidRegistrationWithInsurance(user, messageText, message); 
                     return;
                 }
                 if (action == "W/o insurance")
                 {
-                    await registrationPilotsCommand.CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message);
+                    await commandProvider.pilotCommandProvider.registrationCommand.CommandHandler_PaidRegistrationWithoutInsurance(user, messageText, message); 
                     return;
                 }
                 if (action == "Coprorate client")
                 {
-                    await CommandHandler_BuisnessRegistrationKorporativ(chatid, messageText, message);
+                    await commandProvider.buisnessCommandProvider.buisnessTaskRegistration.CommandHandler_BuisnessRegistrationKorporativ(chatid, messageText, message); 
                     return;
                 }
                 if (action == "Create task")
                 {
-                    await buisnessAction.CreateTask(chatid, messageText, message);
+                    await commandProvider.buisnessCommandProvider.createBuisnessTaskRegistration.CreateTask(chatid, messageText, message); 
                     return;
                 }
             }

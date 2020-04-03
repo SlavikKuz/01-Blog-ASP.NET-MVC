@@ -205,7 +205,7 @@ namespace TeleDronBot.Services
                     return null;
                 }
                 currIdProduct = order.Id;
-                result = await buisnessTaskRepository.Get().FirstOrDefaultAsync(i => i.Id < currIdProduct && i.ChatId == chatid);
+                result = await buisnessTaskRepository.Get().LastOrDefaultAsync(i => i.Id < currIdProduct && i.ChatId == chatid);
                 return result.Id;
             }
             
@@ -231,7 +231,7 @@ namespace TeleDronBot.Services
                 return null;
 
             currIdProduct = order.CurrentProductId;
-            result = await buisnessTaskRepository.Get().FirstOrDefaultAsync(i => i.Id < currIdProduct);
+            result = await buisnessTaskRepository.Get().LastOrDefaultAsync(i => i.Id < currIdProduct);
             
             return result.Id;
         }

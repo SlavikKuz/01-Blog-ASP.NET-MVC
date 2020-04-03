@@ -15,5 +15,6 @@ namespace TeleDronBot.DTO
         public long ChatId { get; set; }
         public int MessageId { get; set; }
         public int CurrentId { get; set; }
+        public string Region { get; set; }
     }
 }

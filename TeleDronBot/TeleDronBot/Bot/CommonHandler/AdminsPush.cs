@@ -46,10 +46,10 @@ namespace TeleDronBot.Bot.CommonHandler
                 $"Address:{proposal.Address}\n " +
                 $"Address, geolocation:{proposal.RealAddress}";
 
-            foreach (long _chatid in admins)
+            admins.ForEach(async (item) =>
             {
-                await client.SendTextMessageAsync(_chatid, message);
-            }
+                await client.SendTextMessageAsync(item, message);
+            });
         }
     }
 }

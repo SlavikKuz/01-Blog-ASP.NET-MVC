@@ -22,7 +22,8 @@ namespace TeleDronBot.Services
         
         public async ValueTask<SosDTO> FindById(long chatid)
         {
-            return await sosTableRepository.Get().FirstOrDefaultAsync(i => i.ChatId == chatid);
+            SosDTO sos = await sosTableRepository.Get().FirstOrDefaultAsync(i => i.ChatId == chatid);
+            return sos;
         }
     }
 }

@@ -17,7 +17,7 @@ using Telegram.Bot.Args;
 
 namespace TeleDronBot.Bot
 {
-    class CallBackHandler : RepositoryProvider, ICallbackHandler
+    class CallBackHandler : ICallbackHandler
     {
         TelegramBotClient client;
 
@@ -35,15 +35,8 @@ namespace TeleDronBot.Bot
             offerCallback = new RequestOfferCallBack(client, provider);
             myOffersCallback = new ShowMyOffersCallBack(client, provider);
             startDialogCallBack = new StartDialogCallBack(client, provider);
+            CallBackShowUsers showUsersCallback;
         }
-
-        #region PrivateHandlers
-        private async Task CallBackHandler_Confirm(long chatid)
-        {
-            HubDTO hub = await hubRepository.Get().FirstOrDefaultAsync(i => i.ChatIdReceiver == chatid);
-            //await hubRepository.ConfirmDialog("Start", hub.ChatIdCreater, chatid);
-        }
-        #endregion
 
         public async Task BaseCallBackHandler(CallbackQueryEventArgs callback)
         {
@@ -77,6 +70,11 @@ namespace TeleDronBot.Bot
             if (callback.CallbackQuery.Data == "confirm")
             {
                 await startDialogCallBack.StartCommenication(callback);
+            }
+
+            if (callback.CallbackQuery.Data == "ShowUserNext" || callback.CallbackQuery.Data == "ShowUserPrevious")
+            {
+                await showUsersCallback.SendCallBack(callback);
             }
         }
     }

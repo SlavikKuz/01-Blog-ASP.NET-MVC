@@ -10,7 +10,7 @@ namespace TeleDronBot.DTO
     {
         [Key]
         public int Id { get; set; }
-        public bool Type { get; set; }
+        public Int16 Type { get; set; }
         [ForeignKey("UserDTO")]
         public long ChatId { get; set; }
         public float longtitude { get; set; }

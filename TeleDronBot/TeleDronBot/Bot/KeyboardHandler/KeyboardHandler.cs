@@ -7,6 +7,25 @@ namespace TeleDronBot.Bot
 {
     class KeyboardHandler
     {
+        public static IReplyMarkup VariantSOS()
+        {
+            return new ReplyKeyboardMarkup
+            {
+                Keyboard = new[]
+                {
+                    new[]
+                    {
+                        new KeyboardButton("Inurence")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("Accident")
+                    }
+                },
+                ResizeKeyboard = true
+            };
+        }
+
         public static IReplyMarkup ShowPartnersPilot()
         {
             return new ReplyKeyboardMarkup
@@ -322,6 +341,22 @@ namespace TeleDronBot.Bot
                 new[]
                 {
                     new InlineKeyboardButton(){Text = "Start dialog" , CallbackData="StartDialog"}
+                }
+           });
+        }
+
+        public static IReplyMarkup CallBackShowForUser()
+        {
+            return new InlineKeyboardMarkup(new InlineKeyboardButton[][]
+            {
+
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "⏩",CallbackData="ShowUserNext"}
+                },
+                new[]
+                {
+                    new InlineKeyboardButton(){Text = "⏪",CallbackData="ShowUserPrevious"}
                 }
            });
         }

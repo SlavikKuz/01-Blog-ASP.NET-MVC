@@ -10,9 +10,16 @@ using Telegram.Bot.Args;
 
 namespace TeleDronBot.Bot
 {
-    class AdminHandler : RepositoryProvider
+    class AdminHandler
     {
-        public AdminHandler(TelegramBotClient client) { }
+        TelegramBotClient client;
+        MainProvider provider;
+
+        public AdminHandler(TelegramBotClient client, MainProvider provider)
+        {
+            this.client = client;
+            this.provider = provider;
+        }
 
         public async Task BaseAdminMessage(MessageEventArgs message)
         {

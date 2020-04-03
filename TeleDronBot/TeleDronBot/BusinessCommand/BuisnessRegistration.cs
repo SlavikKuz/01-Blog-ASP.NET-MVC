@@ -15,8 +15,11 @@ namespace TeleDronBot.BusinessCommand
     {
         public BuisnessRegistration(TelegramBotClient client, MainProvider provider) : base(client, provider) { }
 
-        private async Task CommandHandler_BuisnessRegistrationKorporativ(long chatid, string message, MessageEventArgs messageObject)
+        public async Task CommandHandler_BuisnessRegistrationKorporativ(long chatid, string message, MessageEventArgs messageObject)
         {
+            if (provider.userService == null)
+                await client.SendTextMessageAsync(chatid, "strange");
+
             int currentStep = await provider.userService.GetCurrentActionStep(chatid);
 
             UserDTO user = await provider.userService.FindById(chatid);
@@ -28,7 +31,7 @@ namespace TeleDronBot.BusinessCommand
                 user.FIO = message;
                 await provider.userService.Update(user);
                 await provider.userService.ChangeAction(chatid, "Corporate registration", ++currentStep);
-                await client.SendTextMessageAsync(chatid, "ВYour telephone number");
+                await client.SendTextMessageAsync(chatid, "Your telephone number");
                 return;
             }
 

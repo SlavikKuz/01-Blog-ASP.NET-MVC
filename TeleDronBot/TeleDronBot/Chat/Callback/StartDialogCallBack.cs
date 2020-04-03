@@ -42,6 +42,7 @@ namespace TeleDronBot.Chat.Callback
             if (await provider.hubService.PilotInDialog(chatIdReceiver))
             {
                 await client.SendTextMessageAsync(chatid, "Pilot joined dialog");
+                return;
             }
 
             string messageAnswer = $"{user.FIO} wants to contact you \n " +
